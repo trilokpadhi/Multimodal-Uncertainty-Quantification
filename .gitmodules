@@ -1,0 +1,15 @@
+[submodule "playground/LLaVA"]
+	path = playground/LLaVA
+	url = https://github.com/haotian-liu/LLaVA.git
+[submodule "playground/CogVLM"]
+	path = playground/CogVLM
+	url = https://github.com/THUDM/CogVLM.git
+[submodule "playground/i-Code"]
+	path = playground/i-Code
+	url = https://github.com/microsoft/i-Code.git
+[submodule "playground/MiniGPT-4"]
+	path = playground/MiniGPT-4
+	url = https://github.com/Vision-CAIR/MiniGPT-4.git
+[submodule "playground/CogVLM2"]
+	path = playground/CogVLM2
+	url = https://github.com/THUDM/CogVLM2.git
