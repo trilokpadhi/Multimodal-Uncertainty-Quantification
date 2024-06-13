@@ -13,3 +13,6 @@
 [submodule "playground/CogVLM2"]
 	path = playground/CogVLM2
 	url = https://github.com/THUDM/CogVLM2.git
+[submodule "playground/scene_graph/SceneGraphGenZeroShotWithGSAM"]
+	path = playground/scene_graph/SceneGraphGenZeroShotWithGSAM
+	url = https://github.com/JackWhite-rwx/SceneGraphGenZeroShotWithGSAM.git
