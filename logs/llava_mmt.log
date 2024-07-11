@@ -1,0 +1,13 @@
+conv_mode: null
+data_path: /home/ubuntu/Multimodal-Uncertainty-Quantification/datasets/MMT-Bench/MMT-Bench_VAL.tsv
+image_file: path/to/image.png
+max_new_tokens: 512
+model_base: null
+model_path: liuhaotian/llava-v1.6-vicuna-7b
+no_of_responses_each_sample: 20
+num_beams: 1
+output_path: llava_mmt_output.json
+query: Your query here
+sep: ','
+temperature: 0.01
+top_p: null
