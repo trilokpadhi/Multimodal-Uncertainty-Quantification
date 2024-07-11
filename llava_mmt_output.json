@@ -1,0 +1,532 @@
+{
+    "2797": {
+        "prompt": "\n            Question: Based on the given image, which caption has the most correct ordering of the constituents?\n\nChoose the best answer from the following choices.\n            A. Two dancers performing in the spotlight, on stage.\n            B. A man and woman dancing the tango in ballroom attire.\n            C. The woman in the red dress is dancing with the man in a suit.\n            D. A woman in a fiery red dress and a man in a suit dance seductively together.\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a tango performance. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a tango performance. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a tango performance. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man and woman dancing the tango in ballroom attire. The man is wearing a suit and the woman is in a red dress. They are dancing in a spotlight, which is typical for a performance setting. The caption 'A man and woman dancing the tango in ballroom attire' is the most correct ordering of the constituents in the image.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.00010263377835973031
+    },
+    "2860": {
+        "prompt": "\n            There are four images captions about the relation 'to the right of' Which one is correct?.\n\nBased on the above and the given image, choose the single most likely answer from the following choices.\n            A. the refrigerator is to the right of the building\n            B. the building is to the right of the refrigerator\n            C. nan\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as seen in the image. The building is not to the right of the refrigerator, which is the correct relation based on the image provided.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the counter next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the counter next to the refrigerator.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the counter next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The refrigerator is to the right of the building, as it is located in the kitchen area, which is adjacent to the building. The stove is also to the right of the building, as it is placed on the countertop next to the refrigerator.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.0001641921252366363
+    },
+    "2841": {
+        "prompt": "\n            Is there a bottle in the image?\n            A. yes\n            B. no\n            C. nan\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. It is not in the foreground but it is present in the scene.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. It is not in the foreground but it is present in the scene.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. It is not in the foreground but it is present in the scene.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            }
+        ],
+        "uncertainty": 0.017444931196394568
+    },
+    "2804": {
+        "prompt": "\n            Question: Based on the given image, which caption has the most correct ordering of the constituents?\n\nChoose the best answer from the following choices.\n            A. An officer in a black uniform and hat stands to the left of a large structure with other officers in the background.\n            B. A policeman looking away from the camera with a couple cars, other policemen, and other people in the background all in front of a building.\n            C. A guard is on the look out while on duty.\n            D. A man in uniform is standing in front of a large building.\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a policeman on duty. The other descriptions do not match the image's content. The presence of other officers and cars in the background, as well as the man looking away from the camera, are not visible in the image. The description of a guard looking out while on duty is also not accurate, as the man in the image is not looking away from the camera.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "The image shows a man in a uniform standing in front of a large building, which is consistent with the description of a guard on duty. The presence of other officers in the background and the fact that the man is looking away from the camera suggest that he is actively monitoring the area. The cars and other people in the background are not directly related to the guard's role, so they do not fit the description. The other options do not accurately describe the scene in the image.",
+                "confidence": 0.9
+            }
+        ],
+        "uncertainty": 0.0018046814832061336
+    },
+    "2792": {
+        "prompt": "\n            Question: Based on the given image, which caption has the most correct ordering of the constituents?\n\nChoose the best answer from the following choices.\n            A. A man in a white shirt walking in front of an old building.\n            B. Man walking away from building with large tunnel-like entrance holding a drink and a man going into the entrance.\n            C. Man in shorts and t-shirt walking and holding a drink in front of an archway.\n            D. A young man holding a cup, standing in front of an archway to an old stone building.\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene in the photo.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in shorts and a t-shirt walking and holding a drink in front of an archway to an old stone building. The man is not going into the entrance, and there is no other person visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.0013041539495496934
+    }
+}
