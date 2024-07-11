@@ -29,6 +29,7 @@ conda activate llava
 
 log "Upgrading pip..."
 pip install --upgrade pip  # enable PEP 660 support
+pip install --upgrade setuptools packaging
 
 log "Installing package in editable mode..."
 pip install -e .
