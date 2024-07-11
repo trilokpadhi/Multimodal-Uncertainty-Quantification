@@ -1,3 +1,2 @@
 models/ml-ferret/checkpoints/*
-datasets/*
-datasets/MMT-Bench
+datasets/
