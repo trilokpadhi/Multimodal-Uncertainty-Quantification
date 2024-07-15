@@ -1,5 +1,5 @@
 # python uq_llava_MMT.py --config-file configs/llava_mmt.yaml --log-file logs/llava_mmt.log
-
+# For running in background: nohup python uq_llava_MMT.py --config-file configs/llava_mmt.yaml --log-file logs/llava_mmt.log > logs/llava_mmt.out 2>&1 &
 import argparse
 import torch
 import yaml
@@ -38,6 +38,8 @@ import pandas as pd
 import pandas as pd
 import json
 from tqdm import tqdm
+from transformers import AutoProcessor, AutoModelForCausalLM
+from sklearn.metrics.pairwise import cosine_similarity
 
 # Load SpaCy model
 nlp = spacy.load("en_core_web_sm")
@@ -186,7 +188,7 @@ def convert_to_grakel_graphs(graphs):
     return grakel_graphs
 
 # Function to compute Weisfeiler-Lehman kernel and calculate uncertainty
-def calculate_uncertainty(graphs):
+def calculate_uncertainty_graph_kernel(graphs):
     grakel_graphs = convert_to_grakel_graphs(graphs)
     
     if not grakel_graphs:
@@ -206,19 +208,20 @@ def calculate_uncertainty(graphs):
     return uncertainty
 
 # Assuming `eval_model` and `Args` are already defined as in previous examples
-def generate_responses_and_calculate_uncertainty(filtered_df_hallucination, num_images=1):
-    indices = random.sample(filtered_df_hallucination.index.tolist(), 5)
+def generate_responses(args):
+    if args.debug:
+        indices = random.sample(args.filtered_df.index.tolist(), args.num_images)
+    else:
+        indices = args.filtered_df.index.tolist()
     
-    # indices = filtered_df_hallucination.index.tolist()
     results = {}
-    
     for idx in tqdm(indices):
         with pd.option_context('display.max_colwidth', None):
-            question = filtered_df_hallucination.loc[idx, 'question']
-            choice_a = filtered_df_hallucination.loc[idx, 'A']
-            choice_b = filtered_df_hallucination.loc[idx, 'B']
-            choice_c = filtered_df_hallucination.loc[idx, 'C']
-            choice_d = filtered_df_hallucination.loc[idx, 'D']
+            question = args.filtered_df.loc[idx, 'question']
+            choice_a = args.filtered_df.loc[idx, 'A']
+            choice_b = args.filtered_df.loc[idx, 'B']
+            choice_c = args.filtered_df.loc[idx, 'C']
+            choice_d = args.filtered_df.loc[idx, 'D']
 
             prompt = f"""
             {question}
@@ -233,7 +236,7 @@ def generate_responses_and_calculate_uncertainty(filtered_df_hallucination, num_
             print(prompt)
         
         # Decode the image
-        image_data_base64 = filtered_df_hallucination.loc[idx, 'image']
+        image_data_base64 = args.filtered_df.loc[idx, 'image']
         image_data = base64.b64decode(image_data_base64)
         image = Image.open(BytesIO(image_data))
 
@@ -243,103 +246,202 @@ def generate_responses_and_calculate_uncertainty(filtered_df_hallucination, num_
         args.query = prompt
         args.temperature = args.temperature
         responses = []
-        for _ in range(args.no_of_responses_each_sample):  # Get 30 responses
+        for _ in range(args.no_of_responses_each_sample):  # Get n responses
             response = eval_model(args)
             print(response)
             print('-'*50)
             if response:
-                responses.append(json.loads(response))
+                try:
+                    """
+                    For responses as below (Perfect JSON format):
+                    {
+                        "answer": "B",
+                        "explanation": "The sandwich is on the foil, which is a common way to wrap food to keep it fresh and prevent it from sticking to surfaces. The foil is not on the lunch, nor is the lunch on the foil. The sandwich is the main subject of the image, and it is placed on the foil, which is a piece of paper or aluminum that is commonly used for wrapping food.",
+                        "confidence": 0.9
+                    }
+                    """
+                    responses.append(json.loads(response))
+                except Exception as e:
+                    try:
+                        """
+                        For responses as below:
+                        ```json
+                        {
+                        "answer": "C",
+                        "explanation": "The woman is wearing blue jeans. The jeans are a common type of clothing item that is typically worn as pants. They are a popular choice for casual wear and are often associated with a relaxed, comfortable style. The jeans in the image are likely a key feature of the woman's outfit, as they are a common and recognizable type of clothing.",
+                        "confidence": 0.9
+                        }
+                        ```
+                        """
+                        json_string = response.strip().removeprefix('```json').removesuffix('```').strip()
+                        responses.append(json.loads(json_string))
+                    except Exception as e:
+                        print(f"Error parsing response: {e}")
+
             else:
                 print("No response was generated.")
-                
+
+        results[idx] = {
+            'prompt': prompt,
+            'responses': responses,
+        }
+    
+    return results
+
+# Function to quantify uncertainty
+def quantify_uncertainty(results):
+    for idx, result in results.items():
+        responses = result['responses']
         
         # Extract entities and relationships from responses
         graphs = []
         for response in responses:
-            print(response)
-            # print(response['explanation'])
-            if response['explanation']:
-                entities, relationships = extract_entities_and_relationships(response['explanation'])
-                G = construct_graph(entities, relationships)
-                graphs.append(G)
+            if 'explanation' in response and response['explanation']:
+                try:
+                    entities, relationships = extract_entities_and_relationships(response['explanation'])
+                    G = construct_graph(entities, relationships)
+                    graphs.append(G)
+                except Exception as e:
+                    print(f"Error extracting entities and relationships: {e}")
         
         # Calculate uncertainty
-        uncertainty = calculate_uncertainty(graphs)
+        try:
+            uncertainty = calculate_uncertainty_graph_kernel(graphs)
+        except Exception as e:
+            print(f"Error calculating uncertainty: {e}")
+            uncertainty = None
         
-        if uncertainty is None:
-            print(f"Uncertainty could not be calculated for index {idx}.")
-        
-        results[idx] = {
-            'prompt': prompt,
-            'responses': responses,
-            'uncertainty': uncertainty
-        }
+        result['uncertainty'] = uncertainty                           
     
     return results
-    #     with pd.option_context('display.max_colwidth', None):
-    #         question = filtered_df_hallucination.loc[2791, 'question']
-    #         choice_a = filtered_df_hallucination.loc[2791, 'A']
-    #         choice_b = filtered_df_hallucination.loc[2791, 'B']
-    #         choice_c = filtered_df_hallucination.loc[2791, 'C']
-    #         choice_d = filtered_df_hallucination.loc[2791, 'D']
 
-    #         prompt = f"""
-    #         {question}
-    #         A. {choice_a}
-    #         B. {choice_b}
-    #         C. {choice_c}
-    #         D. {choice_d}
-            
-    #         Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).
-            
-    #         """
-    #         print(prompt)
-        
-    #     # Decode the image
-    #     image_data_base64 = filtered_df_hallucination.loc[idx, 'image']
-    #     image_data = base64.b64decode(image_data_base64)
-    #     image = Image.open(BytesIO(image_data))
+def extract_sentence_features(sentence):
+    doc = nlp(sentence)
+    key_words = [token.lemma_ for token in doc if token.pos_ in ['NOUN', 'VERB', 'ADJ', 'ADV']]
+    return doc.vector, key_words, [token.pos_ for token in doc]
 
-    #     # Set the arguments
-    #     # args.image_file = image_file
-    #     args.image_file = image
-    #     args.query = prompt
-    #     args.temperature = 0.1
-    #     responses = []
-    #     for _ in range(args.no_of_responses_each_sample):  # Get 30 responses
-    #         response = eval_model(args)
-    #         print(response)
-    #         print('-'*50)
-    #         if response:
-    #             responses.append(json.loads(response))
-    #         else:
-    #             print("No response was generated.")
-                
+
+def custom_kernel_s3(feat1, feat2):
+    vec1, words1, _ = feat1
+    vec2, words2, _ = feat2
+
+    vec_similarity = cosine_similarity(vec1.reshape(1, -1), vec2.reshape(1, -1))[0][0]
+    word_overlap = len(set(words1) & set(words2)) / max(len(set(words1) | set(words2)), 1)
+
+    # Calculate bigram overlap
+    bigrams1 = set(zip(words1[:-1], words1[1:]))
+    bigrams2 = set(zip(words2[:-1], words2[1:]))
+    bigram_overlap = len(bigrams1 & bigrams2) / max(len(bigrams1 | bigrams2), 1)
+
+    if np.allclose(vec1, vec2, atol=1e-6) and words1 == words2:
+        return 1.0
+
+    return 0.5 * vec_similarity + 0.25 * word_overlap + 0.25 * bigram_overlap
+
+
+# def quantify_uncertainty_from_image_captions(args):
+#     for idx, result in args.responses.items():
+#         responses = result['responses']
         
-    #     # Extract entities and relationships from responses
-    #     graphs = []
-    #     for response in responses:
-    #         print(response)
-    #         # print(response['explanation'])
-    #         if response['explanation']:
-    #             entities, relationships = extract_entities_and_relationships(response['explanation'])
-    #             G = construct_graph(entities, relationships)
-    #             graphs.append(G)
+#         # get the dataframe and the image from the index
+#         image_data_base64 = args.filtered_df.loc[idx, 'image']
+#         image_data = base64.b64decode(image_data_base64)
+#         image = Image.open(BytesIO(image_data))
         
-    #     # Calculate uncertainty
-    #     uncertainty = calculate_uncertainty(graphs)
+#         # get caption from florence-large
+#         task_prompt = '<CAPTION>'
+#         caption = get_caption(args, task_prompt,  image) # proxy for ground truth
+#         result['features'] = [extract_sentence_features(caption[task_prompt]) + extract_sentence_features(s['explanation']) for s in responses]
+
+#         alpha = 0.5
+#         beta = 0.5
+#         n = len(result['features'])
+#         K = np.zeros((n, n))
+#         for i in range(n):
+#             for j in range(n):
+#                 # K[i, j] = np.exp(-alpha * np.linalg.norm(result['features'][i][0] - result['features'][j][0])**2 - beta * len(set(result['features'][i][1]).intersection(result['features'][j][1])))
+
+#                 K[i, j] = custom_kernel_s3(result['features'][i], result['features'][j])
+#                 K[j, i] = K[i, j]
+
+#         similarities_within_group = K[1:, 1:][np.triu_indices(n-1, k=1)] # similarities within group of responses
+#         similarities_with_ground_truth = K[0, 1:] # similarities with ground truth
+
+#         avg_similarity_within_group = np.mean(similarities_within_group)
+#         avg_similarity_with_ground_truth = np.mean(similarities_with_ground_truth)
+
+#         uncertainty = alpha * (1 - avg_similarity_within_group) + beta * (1 - avg_similarity_with_ground_truth)
+
+#         result['uncertainty'] = uncertainty
+
+#     return args.responses
+
+def quantify_uncertainty_from_image_captions(args):
+    for idx, result in args.responses.items():
+        responses = result['responses']
         
-    #     if uncertainty is None:
-    #         print(f"Uncertainty could not be calculated for index {idx}.")
+        # get the dataframe and the image from the index
+        image_data_base64 = args.filtered_df.loc[idx, 'image']
+        image_data = base64.b64decode(image_data_base64)
+        image = Image.open(BytesIO(image_data))
         
-    #     results[idx] = {
-    #         'index': idx,
-    #         'prompt': prompt,
-    #         'responses': responses,
-    #         'uncertainty': uncertainty
-    #     }
-    
-    # return results
+        # get caption from florence-large
+        task_prompt = '<CAPTION>'
+        caption = get_caption(args, task_prompt, image)  # proxy for ground truth
+        ground_truth_features = extract_sentence_features(caption[task_prompt])
+        
+        # Extract features for each response explanation
+        features = [ground_truth_features] + [extract_sentence_features(s['explanation']) for s in responses]
+
+        alpha = 0.5
+        beta = 0.5
+        n = len(features)
+        K = np.zeros((n, n))
+        
+        for i in range(n):
+            for j in range(i, n):
+                K[i, j] = custom_kernel_s3(features[i], features[j])
+                K[j, i] = K[i, j]
+
+        similarities_within_group = K[1:, 1:][np.triu_indices(n-1, k=1)]  # similarities within group of responses
+        similarities_with_ground_truth = K[0, 1:]  # similarities with ground truth
+
+        avg_similarity_within_group = np.mean(similarities_within_group)
+        avg_similarity_with_ground_truth = np.mean(similarities_with_ground_truth)
+
+        uncertainty = alpha * (1 - avg_similarity_within_group) + beta * (1 - avg_similarity_with_ground_truth)
+
+        result['uncertainty'] = uncertainty
+
+    return args.responses
+
+
+
+        
+        
+def get_caption(args, task_prompt, image, text_input=None):
+    if text_input is None:
+        prompt = task_prompt
+    else:
+        prompt = task_prompt + text_input
+    inputs = args.caption_model_processor(text=prompt, images=image, return_tensors="pt")
+    generated_ids = args.caption_model.generate(
+      input_ids=inputs["input_ids"].cuda(),
+      pixel_values=inputs["pixel_values"].cuda(),
+      max_new_tokens=1024,
+      early_stopping=False,
+      do_sample=False,
+      num_beams=3,
+    )
+    generated_text = args.caption_model_processor.batch_decode(generated_ids, skip_special_tokens=False)[0]
+    parsed_answer = args.caption_model_processor.post_process_generation(
+        generated_text, 
+        task=task_prompt, 
+        image_size=(image.width, image.height)
+    )
+
+    return parsed_answer
+
 
 def load_args_from_config(config_path):
     with open(config_path, 'r') as file:
@@ -354,11 +456,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config-file", help="Path to the config file.")
     parser.add_argument("--log-file", help="Path to the log file.")
-    # parser.add_argument("--config-file", type=str, default="facebook/opt-350m")
-    # parser.add_argument("--log-file", type=str, default=None)
     args = parser.parse_args()
+
+    
     # # Load arguments from config file
     config_args = load_args_from_config(args.config_file)
+    
     # Update args with loaded config_args
     args.__dict__.update(config_args.__dict__)
     args.model_name = get_model_name_from_path(args.model_path)
@@ -368,12 +471,20 @@ if __name__ == "__main__":
     
     # generate results and calculate uncertainty
     df = pd.read_csv(args.data_path, sep = '\t')
-    filtered_df = df[df['category'].str.contains('hallucination', case=False)]
-    results = generate_responses_and_calculate_uncertainty(filtered_df, num_images=1)
+    args.filtered_df = df[df['category'].str.contains(args.category, case=False)]
+    args.responses = generate_responses(args)
+    
+    # Load the florence-large model
+    args.caption_model_id = 'microsoft/Florence-2-large'
+    args.caption_model = AutoModelForCausalLM.from_pretrained(args.caption_model_id, trust_remote_code=True).eval().cuda()
+    args.caption_model_processor = AutoProcessor.from_pretrained(args.caption_model_id, trust_remote_code=True)
+    
+    
+    responses_with_uncertainty = quantify_uncertainty_from_image_captions(args)
     
     # Save the results
     with open(args.output_path, 'w') as file:
-        json.dump(results, file)
+        json.dump(responses_with_uncertainty, file)
 
     # Log the arguments
     log_args(config_args, args.log_file)

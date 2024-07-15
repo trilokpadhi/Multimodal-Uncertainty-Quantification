@@ -9,5 +9,8 @@ top_p: null
 num_beams: 1
 max_new_tokens: 512
 data_path: "/home/ubuntu/Multimodal-Uncertainty-Quantification/datasets/MMT-Bench/MMT-Bench_VAL.tsv"
-no_of_responses_each_sample: 20
-output_path: "llava_mmt_output.json"
+no_of_responses_each_sample: 10
+output_path: "llava_mmt_output1_uq_io.json" # uq from both input and output
+debug: true
+num_images: 20
+category: "hallucination"
