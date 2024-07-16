@@ -40,6 +40,9 @@ import json
 from tqdm import tqdm
 from transformers import AutoProcessor, AutoModelForCausalLM
 from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
+from scipy.optimize import linear_sum_assignment
+
 
 # Load SpaCy model
 nlp = spacy.load("en_core_web_sm")
@@ -338,10 +341,42 @@ def custom_kernel_s3(feat1, feat2):
 
     return 0.5 * vec_similarity + 0.25 * word_overlap + 0.25 * bigram_overlap
 
-def custom_kernel(graph1, graph2):
+
+def node_similarity(args,node1, node2):
+    """
+    Calculate similarity between two nodes based on their vector representations.
+    """
+    vec1 = args.embedding_model.encode([node1])[0]
+    vec2 = args.embedding_model.encode([node2])[0]
+    return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
+
+def custom_kernel(args, graph1, graph2):
     # Compare node vectors
-    vectors1 = np.array([node['vector'] for node in graph1[0].values()])
-    vectors2 = np.array([node['vector'] for node in graph2[0].values()])
+    # vectors1 = np.array([node['vector'] for node in graph1[0].values()])
+    # vectors2 = np.array([node['vector'] for node in graph2[0].values()])
+    # vectors1 = np.array([node['vector'] for node in graph1.nodes.values()])
+    # vectors2 = np.array([node['vector'] for node in graph2.nodes.values()])
+
+    # vectors1 = np.array([graph1.nodes[node]['vector'] for node in graph1.nodes])
+    # vectors2 = np.array([graph2.nodes[node]['vector'] for node in graph2.nodes])
+
+    vectors1 = []
+    vectors2 = []
+    
+    for node in graph1.nodes:
+        if 'vector' not in graph1.nodes[node]:
+            print(f"Warning: Node {node} in graph1 does not have a 'vector' attribute")
+            graph1.nodes[node]['vector'] = args.embedding_model.encode([node])[0]
+        vectors1.append(graph1.nodes[node]['vector'])
+    
+    for node in graph2.nodes:
+        if 'vector' not in graph2.nodes[node]:
+            print(f"Warning: Node {node} in graph2 does not have a 'vector' attribute")
+            graph2.nodes[node]['vector'] = args.embedding_model.encode([node])[0]
+        vectors2.append(graph2.nodes[node]['vector'])
+        
+    vectors1 = np.array(vectors1)
+    vectors2 = np.array(vectors2)
 
     # Compute cosine similarity between all pairs of vectors
     similarity_matrix = cosine_similarity(vectors1, vectors2)
@@ -350,11 +385,52 @@ def custom_kernel(graph1, graph2):
     node_similarity = np.mean(similarity_matrix)
 
     # Compare graph structures (you can adjust this part)
-    structure_similarity = 1 if len(graph1[1]) == len(graph2[1]) else 0
+    # structure_similarity = 1 if len(graph1) == len(graph2) else 0
+    structure_similarity = graph_edit_distance_with_node_similarity(args, graph1, graph2)
 
     # Combine node and structure similarity (you can adjust the weights)
     return 0.5 * node_similarity + 0.5 * structure_similarity
 
+def graph_edit_distance_with_node_similarity(args, G1, G2):
+    """
+    Calculate a modified Graph Edit Distance that incorporates node similarity.
+    """
+    # Node substitution cost
+    node_subst_cost = np.zeros((len(G1), len(G2)))
+    for i, n1 in enumerate(G1.nodes(data=True)):
+        for j, n2 in enumerate(G2.nodes(data=True)):
+            node_subst_cost[i, j] = 1 - node_similarity(args, n1[1], n2[1])
+
+    # Edge substitution cost
+    edge_subst_cost = 1.0
+
+    # Node insertion/deletion cost
+    node_ins_del_cost = 1.0
+
+    # Edge insertion/deletion cost
+    edge_ins_del_cost = 1.0
+
+    # Calculate costs
+    cost_matrix = node_subst_cost
+    row_ind, col_ind = linear_sum_assignment(cost_matrix)
+    assignment_cost = cost_matrix[row_ind, col_ind].sum()
+
+    # Count unmatched nodes
+    unmatched_nodes = abs(len(G1) - len(G2))
+
+    # Count edge differences
+    G1_edges = set(G1.edges())
+    G2_edges = set((row_ind[i], col_ind[i]) for i in range(min(len(G1), len(G2))) if (row_ind[i], col_ind[i]) in G2.edges())
+    edge_diff = len(G1_edges.symmetric_difference(G2_edges))
+
+    total_cost = (assignment_cost + 
+                  node_ins_del_cost * unmatched_nodes + 
+                  edge_ins_del_cost * edge_diff)
+
+    max_cost = max(len(G1), len(G2)) * (node_ins_del_cost + edge_ins_del_cost * max(G1.number_of_edges(), G2.number_of_edges()))
+    similarity = 1 - (total_cost / max_cost)
+
+    return similarity
 
 def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(args):
     """
@@ -385,7 +461,7 @@ def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(
         K = np.zeros((n, n))
         for i in range(n):
             for j in range(i, n):
-                K[i, j] = custom_kernel([graphs[i], graphs[j]])
+                K[i, j] = custom_kernel(args, graphs[i], graphs[j])
                 K[j, i] = K[i, j]    
         alpha = 0.5
         beta = 0.5
@@ -503,7 +579,8 @@ if __name__ == "__main__":
     args.caption_model_id = 'microsoft/Florence-2-large'
     args.caption_model = AutoModelForCausalLM.from_pretrained(args.caption_model_id, trust_remote_code=True).eval().cuda()
     args.caption_model_processor = AutoProcessor.from_pretrained(args.caption_model_id, trust_remote_code=True)
-    
+
+    args.embedding_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
     if args.uncertainty_method == 'node_and_structural_similarity':
         responses_with_uncertainty = quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(args)
     elif args.uncertainty_method == 'vec_similarity_bigram_overlap':
