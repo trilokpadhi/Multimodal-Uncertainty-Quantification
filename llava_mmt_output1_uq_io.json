@@ -1,0 +1,950 @@
+{
+    "2836": {
+        "prompt": "\n            Is there a car in the image?\n            A. no\n            B. yes\n            C. nan\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "A",
+                "explanation": "There is no car in the image. It is a baseball game with a batter, catcher, and umpire. The focus is on the batter swinging at a pitch.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no car in the image. It is a baseball game with a batter, catcher, and umpire. The focus is on the batter swinging at a pitch.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no car in the image. It is a baseball game with a batter, catcher, and umpire. The focus is on the batter swinging at a pitch.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no car in the image. It is a baseball game with a batter, catcher, and umpire. The focus is on the batter swinging at a pitch.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no car in the image. It is a baseball game with a batter, catcher, and umpire. The focus is on the batter swinging at a pitch.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no car in the image. It is a baseball game with a batter, catcher, and umpire. The focus is on the batter swinging at a pitch.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no car in the image. It is a baseball game with a batter, catcher, and umpire. The focus is on the batter swinging at a pitch.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no car in the image. It is a baseball game with a batter, catcher, and umpire. The focus is on the batter swinging at a pitch.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no car in the image. It is a baseball game with a batter, catcher, and umpire. The focus is on the batter swinging at a pitch.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no car in the image. It is a baseball game with a batter, catcher, and umpire. The focus is on the batter swinging at a pitch.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.34873090585072836
+    },
+    "2788": {
+        "prompt": "\n            Question: Based on the given image, which caption has the most correct ordering of the constituents?\n\nChoose the best answer from the following choices.\n            A. A group of people, mostly children, are playing in a shallow wading pool.\n            B. A large display of a child's face over a water park.\n            C. A group of girls are playing in a water fountain in the sun.\n            D. Children play in a shallow pool next to a large image of a girl's face.\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "D",
+                "explanation": "The image shows a group of children playing in a shallow pool next to a large image of a girl's face. The caption 'A group of girls are playing in a water fountain in the sun' does not accurately describe the scene, as there is no water fountain and the sun is not visible in the image. The caption 'A large display of a child's face over a water park' is also not correct, as the image does not show a water park. The caption 'A group of people, mostly children, are playing in a shallow wading pool' is partially correct, but it does not specify that the children are playing next to a large image of a girl's face. Therefore, the most correct caption is 'Children play in a shallow pool next to a large image of a girl's face' with a confidence of 1.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a group of children playing in a shallow pool next to a large image of a girl's face. The caption 'A group of girls are playing in a water fountain in the sun' does not accurately describe the scene, as there is no water fountain and the sun is not visible in the image. The caption 'A large display of a child's face over a water park' is also not correct, as the image does not show a water park. The caption 'A group of people, mostly children, are playing in a shallow wading pool' is partially correct, but it does not specify that the children are playing next to a large image of a girl's face. Therefore, the most correct caption is 'Children play in a shallow pool next to a large image of a girl's face' with a confidence of 1.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a group of children playing in a shallow pool next to a large image of a girl's face. The caption 'A group of girls are playing in a water fountain in the sun' does not accurately describe the scene, as there is no water fountain and the sun is not visible in the image. The caption 'A large display of a child's face over a water park' is also not correct, as the image does not show a water park. The caption 'A group of people, mostly children, are playing in a shallow wading pool' is partially correct, but it does not specify that the children are playing next to a large image of a girl's face. Therefore, the most correct caption is 'Children play in a shallow pool next to a large image of a girl's face' with a confidence of 1.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a group of children playing in a shallow pool next to a large image of a girl's face. The caption 'A group of girls are playing in a water fountain in the sun' does not accurately describe the scene, as there is no water fountain and the sun is not visible in the image. The caption 'A large display of a child's face over a water park' is also not correct, as the image does not show a water park. The caption 'A group of people, mostly children, are playing in a shallow wading pool' is partially correct, but it does not specify that the children are playing next to a large image of a girl's face. Therefore, the most correct caption is 'Children play in a shallow pool next to a large image of a girl's face' with a confidence of 1.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a group of children playing in a shallow pool next to a large image of a girl's face. The caption 'A group of girls are playing in a water fountain in the sun' does not accurately describe the scene, as there is no water fountain and the sun is not visible in the image. The caption 'A large display of a child's face over a water park' is also not correct, as the image does not show a water park. The caption 'A group of people, mostly children, are playing in a shallow wading pool' is partially correct, but it does not specify that the children are playing next to a large image of a girl's face. Therefore, the most correct caption is 'Children play in a shallow pool next to a large image of a girl's face' with a confidence of 1.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a group of children playing in a shallow pool next to a large image of a girl's face. The caption 'A group of girls are playing in a water fountain in the sun' does not accurately describe the scene, as there is no water fountain and the sun is not visible in the image. The caption 'A large display of a child's face over a water park' is also not correct, as the image does not show a water park. The caption 'A group of people, mostly children, are playing in a shallow wading pool' is partially correct, but it does not specify that the children are playing next to a large image of a girl's face. Therefore, the most correct caption is 'Children play in a shallow pool next to a large image of a girl's face' with a confidence of 1.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a group of children playing in a shallow pool next to a large image of a girl's face. The caption 'A group of girls are playing in a water fountain in the sun' does not accurately describe the scene, as there is no water fountain and the sun is not visible in the image. The caption 'A large display of a child's face over a water park' is also not correct, as the image does not show a water park. The caption 'A group of people, mostly children, are playing in a shallow wading pool' is partially correct, but it does not specify that the children are playing next to a large image of a girl's face. Therefore, the most correct caption is 'Children play in a shallow pool next to a large image of a girl's face' with a confidence of 1.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a group of children playing in a shallow pool next to a large image of a girl's face. The caption 'A group of girls are playing in a water fountain in the sun' does not accurately describe the scene, as there is no water fountain and the sun is not visible in the image. The caption 'A large display of a child's face over a water park' is also not correct, as the image does not show a water park. The caption 'A group of people, mostly children, are playing in a shallow wading pool' is partially correct, but it does not specify that the children are playing next to a large image of a girl's face. Therefore, the most correct caption is 'Children play in a shallow pool next to a large image of a girl's face' with a confidence of 1.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a group of children playing in a shallow pool next to a large image of a girl's face. The caption 'A group of girls are playing in a water fountain in the sun' does not accurately describe the scene, as there is no water fountain and the sun is not visible in the image. The caption 'A large display of a child's face over a water park' is also not correct, as the image does not show a water park. The caption 'A group of people, mostly children, are playing in a shallow wading pool' is partially correct, but it does not specify that the children are playing next to a large image of a girl's face. Therefore, the most correct caption is 'Children play in a shallow pool next to a large image of a girl's face' with a confidence of 1.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a group of children playing in a shallow pool next to a large image of a girl's face. The caption 'A group of girls are playing in a water fountain in the sun' does not accurately describe the scene, as there is no water fountain and the sun is not visible in the image. The caption 'A large display of a child's face over a water park' is also not correct, as the image does not show a water park. The caption 'A group of people, mostly children, are playing in a shallow wading pool' is partially correct, but it does not specify that the children are playing next to a large image of a girl's face. Therefore, the most correct caption is 'Children play in a shallow pool next to a large image of a girl's face' with a confidence of 1.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.33844369850238837
+    },
+    "2796": {
+        "prompt": "\n            Question: Based on the given image, which caption has the most correct ordering of the constituents?\n\nChoose the best answer from the following choices.\n            A. Two mature hikers take a break and admire the sunset over the lake.\n            B. Two men wearing hats and holding canes are standing silhouetted against a large body of water with sunlight reflecting off the water and a tree to the side.\n            C. Two men stand beneath a tree as they watch the sunset over the ocean.\n            D. Two men wearing hats and using walking sticks are walking near a body of water during sundown.\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "C",
+                "explanation": "The image shows two men standing on a hillside with a body of water in the background, watching the sunset. The presence of the sunset and the silhouette of the men against the water and tree align with the description in option C. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows two men standing on a hillside with a body of water in the background, watching the sunset. The presence of the sunset and the silhouette of the men against the water and the tree align with the description in option C. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows two men standing on a hillside with a body of water in the background, watching the sunset. The presence of the sunset and the silhouette of the men against the water and the tree align with the description in option C. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows two men standing on a hillside with a body of water in the background, watching the sunset. The presence of the sunset and the silhouette of the men against the water and the tree align with the description in option C. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows two men standing on a hillside with a body of water in the background, watching the sunset. The presence of the sunset and the silhouette of the men against the water and the tree align with the description in option C. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows two men standing on a hillside with a body of water in the background, watching the sunset. The presence of the sunset and the silhouette of the men against the water and tree align with the description in option C. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows two men standing on a hillside with a body of water in the background, watching the sunset. The presence of the sunset and the silhouette of the men against the water and the tree align with the description in option C. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows two men standing on a hillside with a body of water in the background, watching the sunset. The presence of the sunset and the silhouette of the men against the water and the tree align with the description in option C. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows two men standing on a hillside with a body of water in the background, watching the sunset. The presence of the sunset and the silhouette of the men against the water and the tree align with the description in option C. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows two men standing on a hillside with a body of water in the background, watching the sunset. The presence of the sunset and the silhouette of the men against the water and the tree align with the description in option C. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.31157612734370765
+    },
+    "2815": {
+        "prompt": "\n            Generate attributes related to objects in a natural image\n            A. full-body\n            B. lower-body\n            C. upper-body\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a dress and standing against a white background. The focus is on her upper body, so the attribute that best describes this image is 'C' - upper-body. The other options do not accurately describe the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image features a woman wearing a dress, which is a lower-body garment. The dress is blue and white, and the woman is standing against a white background. The focus is on the dress and the woman's lower body, which is why the attribute 'lower-body' is most applicable to this image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image features a woman wearing a dress, which is a lower-body garment. The dress is blue and white, and the woman is standing against a white background. The focus is on the dress and the woman's lower body, which is why the attribute 'lower-body' is most applicable to this image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a dress, which is a lower-body garment. The dress is blue and white, and the woman is standing against a white background. The focus is on the dress and the woman's lower body, which is why it is considered a lower-body garment. The other options (full-body and upper-body) would not be applicable in this context because the dress is the main focus of the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image features a woman wearing a dress, which is a lower-body garment. The dress is blue and white, and the woman is standing against a white background. The focus is on the dress and the woman's lower body, which is why the attribute 'lower-body' is most applicable to this image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image features a woman wearing a dress, which is a lower-body garment. The dress is blue and white, and the woman is standing against a white background. The focus is on the dress and the woman's lower body, which is why the attribute 'lower-body' is most applicable to this image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a dress, which is a lower-body garment. The dress is blue and white, and the woman is standing against a white background. The focus is on the dress and the woman's lower body, which is why it is considered a lower-body garment. The other options (full-body and upper-body) would not be applicable in this context because the dress is the main focus of the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image features a woman wearing a dress, which is a lower-body garment. The dress is blue and white, and the woman is standing against a white background. The focus is on the dress and the woman's lower body, which is why the attribute 'lower-body' is most applicable to this image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image features a woman wearing a dress, which is a lower-body garment. The dress is blue and white, and the woman is standing against a white background. The focus is on the dress and the woman's lower body, which is why the attribute 'lower-body' is most applicable to this image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a dress, which is a lower-body garment. The dress is blue and white, and the woman is standing against a white background. The focus is on the dress and the woman's lower body, which is why it is considered a lower-body garment. The other options (full-body and upper-body) would not be applicable in this context because the dress is the main focus of the image.",
+                "confidence": 0.9
+            }
+        ],
+        "uncertainty": 0.4721768056248194
+    },
+    "2834": {
+        "prompt": "\n            Is there a laptop in the image?\n            A. yes\n            B. no\n            C. nan\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "B",
+                "explanation": "There is no laptop in the image. The person is sitting at a table with a plate of food in front of them, and there is a television mounted on the wall. The setting appears to be a dining area, but there is no laptop visible.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "There is no laptop in the image. The person is sitting at a table with a plate of food in front of them, and there is a television mounted on the wall. The setting appears to be a dining area, but there is no laptop visible.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "There is no laptop in the image. The person is sitting at a table with a plate of food in front of them, and there is a television mounted on the wall. The setting appears to be a dining area, but there is no laptop visible.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "There is no laptop in the image. The person is sitting at a table with a plate of food in front of them, and there is a television mounted on the wall. The setting appears to be a dining area, but there is no laptop visible.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "There is no laptop in the image. The person is sitting at a table with a plate of food in front of them, and there is a television mounted on the wall. The setting appears to be a dining area, but there is no laptop visible.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "There is no laptop in the image. The person is sitting at a table with a plate of food in front of them, and there is a television mounted on the wall. The setting appears to be a dining area, but there is no laptop visible.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "There is no laptop in the image. The person is sitting at a table with a plate of food in front of them, and there is a television mounted on the wall. The setting appears to be a dining area, but there is no laptop visible.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "There is no laptop in the image. The person is sitting at a table with a plate of food in front of them, and there is a television mounted on the wall. The setting appears to be a dining area, but there is no laptop visible.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "There is no laptop in the image. The person is sitting at a table with a plate of food in front of them, and there is a television mounted on the wall. The setting appears to be a dining area, but there is no laptop visible.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "There is no laptop in the image. The person is sitting at a table with a plate of food in front of them, and there is a television mounted on the wall. The setting appears to be a dining area, but there is no laptop visible.",
+                "confidence": 0.9
+            }
+        ],
+        "uncertainty": 0.2999220693868304
+    },
+    "2812": {
+        "prompt": "\n            Generate attributes related to objects in a natural image\n            A. upper-body\n            B. lower-body\n            C. full-body\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "C",
+                "explanation": "The image shows a person wearing a black top and black and white shorts. The person is also wearing a black hat. The image is a full-body shot, so it includes both the upper and lower body of the person. The person is standing against a white background, which provides a clear view of their attire and posture.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person wearing a black top and shorts. The person is not fully visible, but the upper and lower body are both visible. Therefore, the correct attribute is 'C' - full-body.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person wearing a black top and black and white shorts. The person is also wearing a black hat. The image is a full-body shot, so it includes both the upper and lower body of the person. The person is standing against a white background, which provides a clear view of their attire and posture.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person wearing a black top and black and white shorts. The person is also wearing a black hat. The image is a full-body shot, so it includes both the upper and lower body of the person. The person is standing against a white background, which provides a clear view of their attire and posture.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person wearing a black top and shorts. The person is not fully visible, but their upper and lower body are visible. Therefore, the correct attribute to describe this image is 'C' - full-body.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person wearing a black top and black and white shorts. The person is also wearing a black hat. The image is a full-body shot, so it includes both the upper and lower body of the person. The person is standing against a white background, which provides a clear view of their attire and posture.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person wearing a black top and black and white shorts. The person is also wearing a black hat. The image is a full-body shot, so it includes both the upper and lower body of the person. The person is standing against a white background, which provides a clear view of their attire and posture.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person wearing a black top and black and white shorts. The person is also wearing a black hat. The image is a full-body shot, so it includes both the upper and lower body of the person. The person is standing against a white background, which provides a clear view of their attire and posture.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person wearing a black top and black and white shorts. The person is also wearing a black hat. The image is a full-body shot, so it includes both the upper and lower body of the person. The person is standing against a white background, which provides a clear view of their attire and posture.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person wearing a black top and black and white shorts. The person is also wearing a black hat. The image is a full-body shot, so it includes both the upper and lower body of the person. The person is standing against a white background, which provides a clear view of their attire and posture.",
+                "confidence": 0.9
+            }
+        ],
+        "uncertainty": 0.39110524166097793
+    },
+    "2839": {
+        "prompt": "\n            Is there a fork in the image?\n            A. no\n            B. yes\n            C. nan\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "A",
+                "explanation": "There is no fork in the image. The image shows a breakfast setting with toast, jam, yogurt, raspberries, and a cup of coffee. There is no fork visible in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no fork in the image. The image shows a breakfast setting with toast, jam, yogurt, raspberries, and a cup of coffee. There is no fork visible in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no fork in the image. The image shows a breakfast setting with toast, jam, yogurt, raspberries, and a cup of coffee. There is no fork visible in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no fork in the image. The image shows a breakfast setting with toast, jam, yogurt, raspberries, and a cup of coffee. There is no fork visible in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no fork in the image. The image shows a breakfast setting with toast, jam, yogurt, raspberries, and a cup of coffee. There is no fork visible in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no fork in the image. The image shows a breakfast setting with toast, jam, yogurt, raspberries, and a cup of coffee. There is no fork visible in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no fork in the image. The image shows a breakfast setting with toast, jam, yogurt, raspberries, and a cup of coffee. There is no fork visible in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no fork in the image. The image shows a breakfast setting with toast, jam, yogurt, raspberries, and a cup of coffee. There is no fork visible in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no fork in the image. The image shows a breakfast setting with toast, jam, yogurt, raspberries, and a cup of coffee. There is no fork visible in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no fork in the image. The image shows a breakfast setting with toast, jam, yogurt, raspberries, and a cup of coffee. There is no fork visible in the scene.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.3221303890733158
+    },
+    "2841": {
+        "prompt": "\n            Is there a bottle in the image?\n            A. yes\n            B. no\n            C. nan\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. It is not in the foreground but it is present in the scene.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. The image is taken from a bird's-eye view, showing the bird standing on a perch with a piece of fruit, which is an orange, in front of it.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "A",
+                "explanation": "There is a bottle in the image, specifically a wine bottle, which is visible in the background. It is not in the foreground but it is present in the scene.",
+                "confidence": 0.9
+            }
+        ],
+        "uncertainty": 0.4363457082157654
+    },
+    "2825": {
+        "prompt": "\n            Generate attributes related to objects in a natural image\n            A. Heavy\n            B. Jacket\n            C. Colorful\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "B",
+                "explanation": "The man is wearing a blue jacket, which is a color commonly associated with the color blue. The jacket is also described as 'heavy,' which suggests it is made of a thick material, possibly to keep the wearer warm. The man is also wearing a white shirt, which is a common color for shirts. The overall color scheme of the image is predominantly blue and white, which is not colorful in the traditional sense, but it does have a monochromatic color palette.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The man is wearing a blue jacket, which is a color that is commonly associated with the color blue. The jacket is also described as 'heavy,' which suggests that it is made of a thick material, possibly to keep the wearer warm. The jacket is also described as 'blue,' which is a color that is often associated with the color blue. The man is also wearing a white shirt, which is a common color for shirts. The combination of the blue jacket and white shirt creates a color contrast, which is a common visual element in fashion photography.",
+                "confidence": 0.9
+            }
+        ],
+        "uncertainty": 0.5077153164246158
+    },
+    "2803": {
+        "prompt": "\n            Question: Based on the given image, which caption has the most correct ordering of the constituents?\n\nChoose the best answer from the following choices.\n            A. Two people are paying to play a basketball carnival game.\n            B. A young woman dressed in black and a young man wearing jean shorts and a gray t-shirt are standing in front of a basketball carnival game on a blue and yellow checkered floor.\n            C. A carnival game operator takes the money of two willing contestants.\n            D. A young couple enjoying a game at a street fair.\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "B",
+                "explanation": "The caption accurately describes the scene with the correct order of constituents. It starts with the two people standing in front of the basketball carnival game, followed by the carnival game operator taking the money from them. The caption also mentions the blue and yellow checkered floor, which is visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The caption accurately describes the scene with the correct order of constituents. It starts with the two people standing in front of the basketball carnival game, followed by the carnival game operator taking the money from them. The caption also mentions the blue and yellow checkered floor, which is visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The caption accurately describes the scene with the correct order of constituents. It starts with the two people standing in front of the basketball carnival game, followed by the carnival game operator taking the money from them. The caption also mentions the blue and yellow checkered floor, which is visible in the image. The other options do not accurately describe the scene or are missing key details.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The caption accurately describes the scene with the correct order of constituents. It starts with the two people standing in front of the basketball carnival game, followed by the carnival game operator taking the money from them. The caption also mentions the blue and yellow checkered floor, which is visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The caption accurately describes the scene with the correct order of constituents. It starts with the two people standing in front of the basketball carnival game, followed by the carnival game operator taking the money from them. The caption also mentions the blue and yellow checkered floor, which is visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The caption accurately describes the scene with the correct order of constituents. It starts with the two people standing in front of the basketball carnival game, followed by the carnival game operator taking the money from them. The caption also mentions the blue and yellow checkered floor, which is visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The caption accurately describes the scene with the correct order of constituents. It starts with the two people standing in front of the basketball carnival game, followed by the carnival game operator taking the money from them. The caption also mentions the blue and yellow checkered floor, which is visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The caption accurately describes the scene with the correct order of constituents. It starts with the two people standing in front of the basketball carnival game, followed by the carnival game operator taking the money from them. The caption also mentions the blue and yellow checkered floor, which is visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The caption accurately describes the scene with the correct order of constituents. It starts with the two people standing in front of the basketball carnival game, followed by the carnival game operator taking the money from them. The caption also mentions the blue and yellow checkered floor, which is visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The caption accurately describes the scene with the correct order of constituents. It starts with the two people standing in front of the basketball carnival game, followed by the carnival game operator taking the money from them. The caption also mentions the blue and yellow checkered floor, which is visible in the image. The other options do not accurately describe the scene.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.3432898529776454
+    },
+    "2817": {
+        "prompt": "\n            Generate attributes related to objects in a natural image\n            A. lower-body\n            B. full-body\n            C. upper-body\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a blue top with white embroidery and jeans. The focus is on the upper body, so the attribute that applies here is 'C' - upper-body. The lower-body and full-body attributes do not apply to this image as the focus is on the upper body of the woman.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a blue top with white embroidery and jeans. The focus is on the upper body, so the attribute that applies here is 'C' - upper-body. The lower-body and full-body attributes do not apply to this image as the focus is on the upper body of the woman.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a blue top with white embroidery and jeans. The focus is on her upper body, so the attribute that applies here is 'C' - upper-body. The lower-body attribute (A) would be applicable if the image were showing her from the waist down, and the full-body attribute (B) would be applicable if the image were showing her from the head to the toes. The attribute 'D' is not applicable in this context, as it refers to a nan or 'not applicable' situation, which is not the case here.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a blue top with white embroidery and jeans. The focus is on the upper body, so the attribute that applies here is 'C' - upper-body. The lower-body and full-body attributes do not apply to this image as they would be more relevant for a different type of image, such as a close-up of the lower body or a full-body shot.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a blue top with white embroidery and jeans. The focus is on the upper body, so the attribute that applies here is 'C' - upper-body. The lower-body and full-body attributes do not apply to this image as they would be more relevant for a different type of image, such as a close-up of the lower body or a full-body shot.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a blue top with white embroidery and jeans. The focus is on the upper body, so the attribute that applies here is 'C' - upper-body. The lower-body and full-body attributes do not apply to this image as they would be more relevant for a different type of image, such as a close-up of the lower body or a full-body shot.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a blue top with white embroidery and jeans. The focus is on the upper body, so the attribute that applies here is 'C' - upper-body. The lower-body and full-body attributes do not apply to this image as they would be more relevant for a different type of image, such as a close-up of the lower body or a full-body shot.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a blue top with white embroidery and jeans. The focus is on the upper body, so the attribute that applies here is 'C' - upper-body. The lower-body and full-body attributes do not apply to this image as they would be more relevant for a different type of image, such as a close-up of the lower body or a full-body shot.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a blue top with white embroidery and jeans. The focus is on the upper body, so the attribute that applies here is 'C' - upper-body. The lower-body and full-body attributes do not apply to this image as they would be more relevant for a different type of image, such as a close-up of the lower body or a full-body shot.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a woman wearing a blue top with white embroidery and jeans. The focus is on the upper body, so the attribute that applies here is 'C' - upper-body. The lower-body and full-body attributes do not apply to this image as they would be more relevant for a different type of image, such as a close-up of the lower body or a full-body shot.",
+                "confidence": 0.9
+            }
+        ],
+        "uncertainty": 0.3749404741432243
+    },
+    "2859": {
+        "prompt": "\n            There are four images captions about the relation 'to the left of' Which one is correct?.\n\nBased on the above and the given image, choose the single most likely answer from the following choices.\n            A. the shirt is to the left of the motorcycle\n            B. the motorcycle is to the left of the shirt\n            C. nan\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [],
+        "uncertainty": NaN
+    },
+    "2802": {
+        "prompt": "\n            Question: Based on the given image, which caption has the most correct ordering of the constituents?\n\nChoose the best answer from the following choices.\n            A. A cyclist is leaning a mountain bike around a bend on a dirt track.\n            B. There is a person in a green shirt riding a bike at an extreme angle in a rural area.\n            C. A person riding a bike sideways through a dirt path.\n            D. A man in a green shirt rides a bike in the woods.\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "C",
+                "explanation": "The image shows a person riding a bike sideways through a dirt path. The cyclist is leaning the bike around a bend, which is a common technique used in mountain biking to navigate turns. The setting appears to be a rural area, which is consistent with the description of a mountain bike track. The cyclist is wearing a green shirt, which matches the description of the person in the image. The helmet is also visible, indicating that the cyclist is taking safety precautions. The image captures the essence of mountain biking, with the cyclist leaning into a turn and navigating a dirt path.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person riding a bike sideways through a dirt path. The cyclist is leaning the bike around a bend, which is a common technique used in mountain biking to navigate turns. The presence of a dirt track and the cyclist's posture suggest that this is a mountain biking scenario. The other options do not accurately describe the image's content.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person riding a bike sideways through a dirt path. The cyclist is leaning the bike around a bend, which is a common technique used in mountain biking to navigate turns. The setting appears to be a rural area, which is consistent with the description of a mountain bike track. The cyclist is wearing a green shirt, which matches the description of the person in the image. The helmet is also visible, indicating that the cyclist is taking safety precautions. The image captures the essence of mountain biking, with the cyclist leaning into a turn and riding sideways on a dirt track.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person riding a bike sideways through a dirt path. The cyclist is leaning the bike around a bend, which is a common technique used in mountain biking to navigate turns. The setting appears to be a rural area, which is consistent with the description of a mountain bike track. The cyclist is wearing a green shirt, which matches the description of the person in the image. The helmet is also visible, indicating that the cyclist is taking safety precautions. The image captures the essence of mountain biking, with the cyclist leaning into a turn and riding sideways on a dirt track.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person riding a bike sideways through a dirt path. The cyclist is leaning the bike around a bend, which is a common technique used in mountain biking to navigate turns. The setting appears to be a rural area, which is consistent with the description of a mountain bike track. The cyclist is wearing a green shirt, which matches the description of the person in the image. The helmet is also visible, indicating that the cyclist is taking safety precautions. The image captures the essence of mountain biking, with the cyclist leaning into a turn and navigating a dirt path.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person riding a bike sideways through a dirt path. The cyclist is leaning the bike around a bend, which is a common technique used in mountain biking to navigate turns. The setting appears to be a rural area, which is consistent with the description of a mountain bike track. The cyclist is wearing a green shirt, which matches the description of the person in the image. The helmet is also visible, indicating that the cyclist is taking safety precautions. The image captures the essence of mountain biking, with the cyclist leaning into a turn and navigating a dirt path.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person riding a bike sideways through a dirt path. The cyclist is leaning the bike around a bend, which is a common technique used in mountain biking to navigate turns. The setting appears to be a rural area, which is consistent with the description of a mountain bike track. The cyclist is wearing a green shirt, which is also visible in the image. The helmet is not visible in the image, but it is a common safety accessory for cyclists. The image captures the essence of mountain biking, with the cyclist leaning into a turn and riding sideways on a dirt path.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person riding a bike sideways through a dirt path. The cyclist is leaning the bike around a bend, which is a common technique used in mountain biking to navigate turns. The setting appears to be a rural area, which is consistent with the description of a mountain bike track. The cyclist is wearing a green shirt, which is also visible in the image. The helmet is not visible in the image, but it is a common safety accessory for cyclists. The image captures the essence of mountain biking, with the cyclist leaning into a turn and navigating a dirt path.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person riding a bike sideways through a dirt path. The cyclist is leaning the bike around a bend, which is a common technique used in mountain biking to navigate turns. The setting appears to be a rural area, which is consistent with the description of a mountain bike track. The cyclist is wearing a green shirt, which is also visible in the image. The helmet is not visible in the image, but it is a common safety accessory for cyclists. The image captures the essence of mountain biking, with the cyclist leaning into a turn and riding sideways on a dirt path.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "C",
+                "explanation": "The image shows a person riding a bike sideways through a dirt path. The cyclist is leaning the bike around a bend, which is a common technique used in mountain biking. The setting appears to be a rural area with a dirt track, which is consistent with the activity of mountain biking. The cyclist is wearing a green shirt, which is visible in the image. The helmet is also visible, indicating that the cyclist is taking safety precautions. The image captures the essence of mountain biking, with the cyclist navigating a challenging terrain and leaning the bike around a bend.",
+                "confidence": 0.9
+            }
+        ],
+        "uncertainty": 0.41715331527142663
+    },
+    "2849": {
+        "prompt": "\n            There are four images captions about the relation 'wearing' Which one is correct?.\n\nBased on the above and the given image, choose the single most likely answer from the following choices.\n            A. the man is wearing the shirt\n            B. the shirt is wearing the man\n            C. nan\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [],
+        "uncertainty": NaN
+    },
+    "2790": {
+        "prompt": "\n            Question: Based on the given image, which caption has the most correct ordering of the constituents?\n\nChoose the best answer from the following choices.\n            A. A man is standing by a group of video games in a bar.\n            B. A man stands next to a bank of computer gambling machines.\n            C. A man standing in a bar with a neon beer sign hanging on the wall\n            D. A man stands next to three video game machines and a beer sign.\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "B",
+                "explanation": "The image shows a man standing next to a group of video games, which are likely video game machines, in a bar. The presence of a neon beer sign hanging on the wall further supports the idea that this is a bar setting. The man is not standing in a casino or a different type of establishment. Therefore, the most correct ordering of the constituents is 'A man stands next to a bank of computer gambling machines' as the description of the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The image shows a man standing next to a group of video games, which are likely video game machines, in a bar. The presence of a neon beer sign hanging on the wall further supports the idea that this is a bar setting. The caption 'A man stands next to a bank of computer gambling machines' is not accurate as the image does not depict gambling machines, but rather video games. The caption 'A man standing in a bar with a neon beer sign hanging on the wall' is also not accurate as it does not specify the presence of video games. The caption 'A man standing next to three video game machines and a beer sign' is also not accurate as the image shows a single man standing next to a group of video games, not three separate machines.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The image shows a man standing next to a group of video games, which are likely video game machines, in a bar. The presence of a neon beer sign hanging on the wall further supports the idea that this is a bar setting. The man is not standing in a casino or a different type of establishment. Therefore, the correct caption is 'A man stands next to a bank of computer gambling machines' as it accurately describes the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The image shows a man standing next to a group of video games, which are likely video game machines, in a bar. The presence of a neon beer sign hanging on the wall further supports the idea that this is a bar setting. The man is not standing in a casino or a different type of establishment. Therefore, the correct caption is 'A man stands next to a bank of computer gambling machines' as it accurately describes the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The image shows a man standing next to a group of video games, which are likely video game machines, in a bar. The presence of a neon beer sign hanging on the wall further supports the idea that this is a bar setting. The man is not standing in a casino or a different type of establishment. Therefore, the most correct ordering of the constituents is 'A man stands next to a bank of computer gambling machines' as the description of the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The image shows a man standing next to a group of video games, which are likely video game machines, in a bar. The presence of a neon beer sign hanging on the wall further supports the idea that this is a bar setting. The man is not standing in a casino or a different type of establishment. Therefore, the most correct ordering of the constituents is 'A man stands next to a bank of computer gambling machines' as the description of the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The image shows a man standing next to a group of video games, which are likely video game machines, in a bar. The presence of a neon beer sign hanging on the wall further supports the idea that this is a bar setting. The man is not standing in a different environment like a casino or a different type of establishment. Therefore, the most correct ordering of the constituents is 'A man stands next to a bank of computer gambling machines' as the first option, followed by 'A man standing in a bar with a neon beer sign hanging on the wall' as the second option, and 'A man stands next to three video game machines and a beer sign' as the third option, which is not present in the image.",
+                "confidence": 0.9
+            },
+            {
+                "answer": "B",
+                "explanation": "The image shows a man standing next to a group of video games, which are likely video game machines, in a bar. The presence of a neon beer sign hanging on the wall further supports the idea that this is a bar setting. The man is not standing in a casino or a different type of establishment. Therefore, the correct caption is 'A man stands next to a bank of computer gambling machines' as it accurately describes the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The image shows a man standing next to a group of video games, which are likely video game machines, in a bar. The presence of a neon beer sign hanging on the wall further supports the idea that this is a bar setting. The man is not standing in a casino or a different type of establishment. Therefore, the correct caption is 'A man stands next to a bank of computer gambling machines' as it accurately describes the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "The image shows a man standing next to a group of video games, which are likely video game machines, in a bar. The presence of a neon beer sign hanging on the wall further supports the idea that this is a bar setting. The man is not standing in a casino or a different type of establishment. Therefore, the correct caption is 'A man stands next to a bank of computer gambling machines' as it accurately describes the scene in the image.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.3880975177480782
+    },
+    "2857": {
+        "prompt": "\n            There are four images captions about the relation 'behind' Which one is correct?.\n\nBased on the above and the given image, choose the single most likely answer from the following choices.\n            A. the trees is behind the fence\n            B. the fence is behind the trees\n            C. nan\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "B",
+                "explanation": "In the image, the baseball player is standing on a field with a fence in the background. The trees are not behind the fence; they are in the foreground. The fence is behind the trees, which is the correct relation for the caption 'behind' in this context.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "In the image, the baseball player is throwing the ball, and the fence is in the background. The trees are not in the background; they are in the foreground. Therefore, the correct caption is 'the fence is behind the trees' as it accurately describes the relative position of the fence to the trees in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "In the image, the baseball player is standing on a field with a fence in the background. The trees are not behind the fence; they are in the foreground. The fence is behind the trees, which is the correct relation for the caption 'behind' in this context.",
+                "confidence": 1
+            },
+            {
+                "answer": "B",
+                "explanation": "In the image, the baseball player is standing on a field with a fence in the background. The trees are not behind the fence; they are in the foreground. The fence is behind the trees, which is the correct relation for the caption 'behind' in this context.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.41887159159308984
+    },
+    "2795": {
+        "prompt": "\n            Question: Based on the given image, which caption has the most correct ordering of the constituents?\n\nChoose the best answer from the following choices.\n            A. A couple of friends inside a large bullfighting arena.\n            B. Many people in a stadium dressed in white are conversing with each other.\n            C. A man in a black hat is standing with a group of people inside a stadium.\n            D. Man in hat waves to the camera, surrounded by other people.\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in a black hat waving to the camera, surrounded by other people. The caption 'A man in hat waves to the camera, surrounded by other people' is the most correct ordering of the constituents. The other captions do not accurately describe the image content.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in a black hat waving to the camera, surrounded by other people. The caption 'A man in hat waves to the camera, surrounded by other people' is the most correct ordering of the constituents. The other captions do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in a black hat waving to the camera, surrounded by other people. The caption 'A man in hat waves to the camera, surrounded by other people' is the most correct ordering of the constituents. The other captions do not accurately describe the image content.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in a black hat waving to the camera, surrounded by other people. The caption 'A man in hat waves to the camera, surrounded by other people' is the most correct ordering of the constituents. The other captions do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in a black hat waving to the camera, surrounded by other people. The caption 'A man in hat waves to the camera, surrounded by other people' is the most correct ordering of the constituents. The other captions do not accurately describe the image content.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in a black hat waving to the camera, surrounded by other people. The caption 'A man in hat waves to the camera, surrounded by other people' is the most correct ordering of the constituents. The other captions do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in a black hat waving to the camera, surrounded by other people. The caption 'A man in hat waves to the camera, surrounded by other people' is the most correct ordering of the constituents. The other captions do not accurately describe the image content.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in a black hat waving to the camera, surrounded by other people. The caption 'A man in hat waves to the camera, surrounded by other people' is the most correct ordering of the constituents. The other captions do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in a black hat waving to the camera, surrounded by other people. The caption 'A man in hat waves to the camera, surrounded by other people' is the most correct ordering of the constituents. The other captions do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "D",
+                "explanation": "The image shows a man in a black hat waving to the camera, surrounded by other people. The caption 'A man in hat waves to the camera, surrounded by other people' is the most correct ordering of the constituents. The other captions do not accurately describe the scene in the image.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.37946167459581714
+    },
+    "2799": {
+        "prompt": "\n            Question: Based on the given image, which caption has the most correct ordering of the constituents?\n\nChoose the best answer from the following choices.\n            A. An older man sites on a cushioned bench with his hands crossed in his lap.\n            B. An elderly man sleeps sitting up on the end of a red couch\n            C. A man rests his eyes, sitting on a red couch with his hands folded.\n            D. Old man wearing a hat and coat sleeping sitting up on a sofa.\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "C",
+                "explanation": "The caption 'A man rests his eyes, sitting on a red couch with his hands folded' is the most correct ordering of the constituents. The man is sitting on a red couch, and his hands are folded, but he is not sleeping. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The caption 'A man rests his eyes, sitting on a red couch with his hands folded' is the most correct ordering of the constituents. The man is sitting on a red couch, and his hands are folded, but he is not sleeping. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The caption 'A man rests his eyes, sitting on a red couch with his hands folded' is the most correct ordering of the constituents. The man is sitting on a red couch, and his hands are folded, but he is not sleeping. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The caption 'A man rests his eyes, sitting on a red couch with his hands folded' is the most correct ordering of the constituents. The man is sitting on a red couch, and his hands are folded, but he is not sleeping. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The caption 'A man rests his eyes, sitting on a red couch with his hands folded' is the most correct ordering of the constituents. The man is sitting on a red couch, and his hands are folded, but he is not sleeping. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The caption 'A man rests his eyes, sitting on a red couch with his hands folded' is the most correct ordering of the constituents. The man is sitting on a red couch, and his hands are folded, but he is not sleeping. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The caption 'A man rests his eyes, sitting on a red couch with his hands folded' is the most correct ordering of the constituents. The man is sitting on a red couch, and his hands are folded, but he is not sleeping. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The caption 'A man rests his eyes, sitting on a red couch with his hands folded' is the most correct ordering of the constituents. The man is sitting on a red couch, and his hands are folded, but he is not sleeping. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The caption 'A man rests his eyes, sitting on a red couch with his hands folded' is the most correct ordering of the constituents. The man is sitting on a red couch, and his hands are folded, but he is not sleeping. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            },
+            {
+                "answer": "C",
+                "explanation": "The caption 'A man rests his eyes, sitting on a red couch with his hands folded' is the most correct ordering of the constituents. The man is sitting on a red couch, and his hands are folded, but he is not sleeping. The other options do not accurately describe the scene in the image.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.37174119564317026
+    },
+    "2845": {
+        "prompt": "\n            Is there a dining table in the image?\n            A. no\n            B. yes\n            C. nan\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "A",
+                "explanation": "There is no dining table visible in the image. The image shows a street scene with a bus, a person standing on the back of a bus, and a building in the background. There are no dining tables or any other furniture items that could be mistaken for a dining table.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no dining table visible in the image. The image shows a street scene with a bus, a person standing on the back of a bus, and a building in the background. There are no dining tables or any other furniture items that could be mistaken for a dining table.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no dining table visible in the image. The image shows a street scene with a bus, a person standing on the back of a bus, and a building in the background. There are no dining tables or any other furniture items that could be mistaken for a dining table.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no dining table visible in the image. The image shows a street scene with a bus, a person standing on the back of a bus, and a building in the background. There are no dining tables or any other furniture items that could be mistaken for a dining table.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no dining table visible in the image. The image shows a street scene with a bus, a person standing on the back of a bus, and a building in the background. There are no dining tables or any other furniture items that could be mistaken for a dining table.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no dining table visible in the image. The image shows a street scene with a bus, a person standing on the back of a bus, and a building in the background. There are no dining tables or any other furniture items that could be mistaken for a dining table.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no dining table visible in the image. The image shows a street scene with a bus, a person standing on the back of a bus, and a building in the background. There are no dining tables or any other furniture items that could be mistaken for a dining table.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no dining table visible in the image. The image shows a street scene with a bus, a person standing on the back of a bus, and a building in the background. There are no dining tables or any other furniture items that could be mistaken for a dining table.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no dining table visible in the image. The image shows a street scene with a bus, a person standing on the back of a bus, and a building in the background. There are no dining tables or any other furniture items that could be mistaken for a dining table.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There is no dining table visible in the image. The image shows a street scene with a bus, a person standing on the back of a bus, and a building in the background. There are no dining tables or any other furniture items that could be mistaken for a dining table.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.308165658604015
+    },
+    "2835": {
+        "prompt": "\n            Is there a skis in the image?\n            A. no\n            B. yes\n            C. nan\n            D. nan\n            \n            Give your answer in JSON format where the keys are answer(one or more options above), explanation( explain your answer), and confidence(varies between 0 to 1).\n            \n            ",
+        "responses": [
+            {
+                "answer": "A",
+                "explanation": "There are no skis in the image. The image shows a city street with a bus and pedestrians. The question mentions 'skis,' which is not present in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There are no skis in the image. The image shows a city street with a bus and pedestrians. The question mentions 'skis,' which is not present in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There are no skis in the image. The image shows a city street with a bus and pedestrians. The question mentions 'skis,' which is not present in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There are no skis in the image. The image shows a city street with a bus and pedestrians. The question mentions 'skis,' which is not present in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There are no skis in the image. The image shows a city street with a bus and pedestrians. The question mentions 'skis,' which is not present in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There are no skis in the image. The image shows a city street with a bus and pedestrians. The question mentions 'skis,' which is not present in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There are no skis in the image. The image shows a city street with a bus and pedestrians. The question mentions 'skis,' which is not present in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There are no skis in the image. The image shows a city street with a bus and pedestrians. The question mentions 'skis,' which is not present in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There are no skis in the image. The image shows a city street with a bus and pedestrians. The question mentions 'skis,' which is not present in the scene.",
+                "confidence": 1
+            },
+            {
+                "answer": "A",
+                "explanation": "There are no skis in the image. The image shows a city street with a bus and pedestrians. The question mentions 'skis,' which is not present in the scene.",
+                "confidence": 1
+            }
+        ],
+        "uncertainty": 0.36556455824110246
+    }
+}
