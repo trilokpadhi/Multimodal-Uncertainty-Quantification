@@ -338,45 +338,72 @@ def custom_kernel_s3(feat1, feat2):
 
     return 0.5 * vec_similarity + 0.25 * word_overlap + 0.25 * bigram_overlap
 
+def custom_kernel(graph1, graph2):
+    # Compare node vectors
+    vectors1 = np.array([node['vector'] for node in graph1[0].values()])
+    vectors2 = np.array([node['vector'] for node in graph2[0].values()])
 
-# def quantify_uncertainty_from_image_captions(args):
-#     for idx, result in args.responses.items():
-#         responses = result['responses']
+    # Compute cosine similarity between all pairs of vectors
+    similarity_matrix = cosine_similarity(vectors1, vectors2)
+
+    # Take the average similarity
+    node_similarity = np.mean(similarity_matrix)
+
+    # Compare graph structures (you can adjust this part)
+    structure_similarity = 1 if len(graph1[1]) == len(graph2[1]) else 0
+
+    # Combine node and structure similarity (you can adjust the weights)
+    return 0.5 * node_similarity + 0.5 * structure_similarity
+
+
+def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(args):
+    """
+    Here we use node and structural similarity as features to compute the similarity between two graphs, and then use these similarities to compute the uncertainty.
+    
+    """
+    for idx, result in args.responses.items():
+        responses = result['responses']
         
-#         # get the dataframe and the image from the index
-#         image_data_base64 = args.filtered_df.loc[idx, 'image']
-#         image_data = base64.b64decode(image_data_base64)
-#         image = Image.open(BytesIO(image_data))
+        # get the dataframe and the image from the index
+        image_data_base64 = args.filtered_df.loc[idx, 'image']
+        image_data = base64.b64decode(image_data_base64)
+        image = Image.open(BytesIO(image_data))
         
-#         # get caption from florence-large
-#         task_prompt = '<CAPTION>'
-#         caption = get_caption(args, task_prompt,  image) # proxy for ground truth
-#         result['features'] = [extract_sentence_features(caption[task_prompt]) + extract_sentence_features(s['explanation']) for s in responses]
+        # get caption from florence-large
+        task_prompt = '<CAPTION>'
+        caption = get_caption(args, task_prompt, image)  # proxy for ground truth
 
-#         alpha = 0.5
-#         beta = 0.5
-#         n = len(result['features'])
-#         K = np.zeros((n, n))
-#         for i in range(n):
-#             for j in range(n):
-#                 # K[i, j] = np.exp(-alpha * np.linalg.norm(result['features'][i][0] - result['features'][j][0])**2 - beta * len(set(result['features'][i][1]).intersection(result['features'][j][1])))
+        graphs = []
 
-#                 K[i, j] = custom_kernel_s3(result['features'][i], result['features'][j])
-#                 K[j, i] = K[i, j]
+        all_sentences = [caption[task_prompt]] + [s['explanation'] for s in responses]
+        for sentence in all_sentences:
+            entities, relationships = extract_entities_and_relationships(sentence)
+            G = construct_graph(entities, relationships)
+            graphs.append(G)    
 
-#         similarities_within_group = K[1:, 1:][np.triu_indices(n-1, k=1)] # similarities within group of responses
-#         similarities_with_ground_truth = K[0, 1:] # similarities with ground truth
+        n = len(graphs)
+        K = np.zeros((n, n))
+        for i in range(n):
+            for j in range(i, n):
+                K[i, j] = custom_kernel([graphs[i], graphs[j]])
+                K[j, i] = K[i, j]    
+        alpha = 0.5
+        beta = 0.5
+        ground_truth_index = 0
+        similarities_within_group = K[1:, 1:][np.triu_indices(n-1, k=1)]  # similarities within group of responses
+        similarities_with_ground_truth = K[ground_truth_index, 1:]  # similarities with ground truth
+        avg_similarity_within_group = np.mean(similarities_within_group)
+        avg_similarity_with_ground_truth = np.mean(similarities_with_ground_truth)
+        uncertainty = alpha * (1 - avg_similarity_within_group) + beta * (1 - avg_similarity_with_ground_truth)
+        result['uncertainty'] = uncertainty
 
-#         avg_similarity_within_group = np.mean(similarities_within_group)
-#         avg_similarity_with_ground_truth = np.mean(similarities_with_ground_truth)
+    return args.responses
 
-#         uncertainty = alpha * (1 - avg_similarity_within_group) + beta * (1 - avg_similarity_with_ground_truth)
-
-#         result['uncertainty'] = uncertainty
-
-#     return args.responses
-
-def quantify_uncertainty_from_image_captions(args):
+def quantify_uncertainty_from_image_captions_with_vec_similarity_bigram_overlap(args):
+    """
+    here we use vector similarity, word overlap, and bigram overlap as features to compute the similarity between two sentences, and then use these similarities to compute the uncertainty
+    
+    """
     for idx, result in args.responses.items():
         responses = result['responses']
         
@@ -416,8 +443,6 @@ def quantify_uncertainty_from_image_captions(args):
     return args.responses
 
 
-
-        
         
 def get_caption(args, task_prompt, image, text_input=None):
     if text_input is None:
@@ -479,9 +504,13 @@ if __name__ == "__main__":
     args.caption_model = AutoModelForCausalLM.from_pretrained(args.caption_model_id, trust_remote_code=True).eval().cuda()
     args.caption_model_processor = AutoProcessor.from_pretrained(args.caption_model_id, trust_remote_code=True)
     
-    
-    responses_with_uncertainty = quantify_uncertainty_from_image_captions(args)
-    
+    if args.uncertainty_method == 'node_and_structural_similarity':
+        responses_with_uncertainty = quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(args)
+    elif args.uncertainty_method == 'vec_similarity_bigram_overlap':
+        responses_with_uncertainty = quantify_uncertainty_from_image_captions_with_vec_similarity_bigram_overlap(args)
+    else:
+        raise ValueError(f"Invalid uncertainty method: {args.uncertainty_method}")
+        
     # Save the results
     with open(args.output_path, 'w') as file:
         json.dump(responses_with_uncertainty, file)
