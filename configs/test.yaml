@@ -10,8 +10,13 @@ num_beams: 1
 max_new_tokens: 512
 data_path: "/home/ubuntu/Multimodal-Uncertainty-Quantification/datasets_/MMT-Bench/MMT-Bench_VAL.tsv"
 no_of_responses_each_sample: 2
-output_path: "llava_mmt_output1_uq_io_graph_similarity.json" # uq from both input and output
 debug: true # debug = false runs for complete dataset, debug = true runs for num_images sample
 num_images: 2
 category: "hallucination"
-uncertainty_method: "node_and_structural_similarity"
+uncertainty_method: "vec_similarity_bigram_overlap"
+get_uncertainty: true
+get_response: false
+# outputs and logs
+output_path: "llava_mmt_output1_uq_io_vec_similarity.json" # uq from both input and output
+responses_path: "llava_mmt_output.json" # uq from both input and output
+log_file: "llava_mmt.log"
