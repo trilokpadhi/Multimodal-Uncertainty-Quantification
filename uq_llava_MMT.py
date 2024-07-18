@@ -42,7 +42,17 @@ from transformers import AutoProcessor, AutoModelForCausalLM
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
 from scipy.optimize import linear_sum_assignment
+import functools
 
+import multiprocessing
+from functools import partial
+from joblib import Parallel, delayed
+import os
+import numpy as np
+
+
+# Disable tokenizers parallelism to avoid deadlocks
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # Load SpaCy model
 nlp = spacy.load("en_core_web_sm")
@@ -342,41 +352,49 @@ def custom_kernel_s3(feat1, feat2):
     return 0.5 * vec_similarity + 0.25 * word_overlap + 0.25 * bigram_overlap
 
 
-def node_similarity(args,node1, node2):
+def node_similarity(embedding_model, node1, node2):
     """
     Calculate similarity between two nodes based on their vector representations.
     """
-    vec1 = args.embedding_model.encode([node1])[0]
-    vec2 = args.embedding_model.encode([node2])[0]
+    vec1 = embedding_model.encode([node1])[0]
+    vec2 = embedding_model.encode([node2])[0]
     return np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
 
-def custom_kernel(args, graph1, graph2):
-    # Compare node vectors
-    # vectors1 = np.array([node['vector'] for node in graph1[0].values()])
-    # vectors2 = np.array([node['vector'] for node in graph2[0].values()])
-    # vectors1 = np.array([node['vector'] for node in graph1.nodes.values()])
-    # vectors2 = np.array([node['vector'] for node in graph2.nodes.values()])
+def encode_nodes(graph, embedding_model, vector_dict):
+    nodes_to_encode = [node for node in graph.nodes if node not in vector_dict]
+    if nodes_to_encode:
+        new_vectors = embedding_model.encode(nodes_to_encode)
+        vector_dict.update(zip(nodes_to_encode, new_vectors))
+    
+    for node in graph.nodes:
+        graph.nodes[node]['vector'] = vector_dict[node]
 
-    # vectors1 = np.array([graph1.nodes[node]['vector'] for node in graph1.nodes])
-    # vectors2 = np.array([graph2.nodes[node]['vector'] for node in graph2.nodes])
+def custom_kernel(embedding_model, graph1, graph2):
+    """
+    Calculate a custom kernel between two graphs.
+    """
 
     vectors1 = []
     vectors2 = []
-    
-    for node in graph1.nodes:
-        if 'vector' not in graph1.nodes[node]:
-            print(f"Warning: Node {node} in graph1 does not have a 'vector' attribute")
-            graph1.nodes[node]['vector'] = args.embedding_model.encode([node])[0]
-        vectors1.append(graph1.nodes[node]['vector'])
-    
-    for node in graph2.nodes:
-        if 'vector' not in graph2.nodes[node]:
-            print(f"Warning: Node {node} in graph2 does not have a 'vector' attribute")
-            graph2.nodes[node]['vector'] = args.embedding_model.encode([node])[0]
-        vectors2.append(graph2.nodes[node]['vector'])
-        
-    vectors1 = np.array(vectors1)
-    vectors2 = np.array(vectors2)
+
+    # Precompute vectors for all unique nodes
+    all_nodes = set(graph1.nodes) | set(graph2.nodes)
+    vector_dict = {}
+
+    # Encode in batches
+    batch_size = 100  # Adjust this based on your model's capabilities and memory constraints
+    for i in range(0, len(all_nodes), batch_size):
+        batch = list(all_nodes)[i:i+batch_size]
+        batch_vectors = embedding_model.encode(batch)
+        vector_dict.update(zip(batch, batch_vectors))
+
+    # Apply vectors to graphs
+    encode_nodes(graph1, embedding_model, vector_dict)
+    encode_nodes(graph2, embedding_model, vector_dict)
+
+    # Extract vectors
+    vectors1 = [graph1.nodes[node]['vector'] for node in graph1.nodes]
+    vectors2 = [graph2.nodes[node]['vector'] for node in graph2.nodes]
 
     # Compute cosine similarity between all pairs of vectors
     similarity_matrix = cosine_similarity(vectors1, vectors2)
@@ -386,12 +404,12 @@ def custom_kernel(args, graph1, graph2):
 
     # Compare graph structures (you can adjust this part)
     # structure_similarity = 1 if len(graph1) == len(graph2) else 0
-    structure_similarity = graph_edit_distance_with_node_similarity(args, graph1, graph2)
+    structure_similarity = graph_edit_distance_with_node_similarity(embedding_model, graph1, graph2)
 
     # Combine node and structure similarity (you can adjust the weights)
     return 0.5 * node_similarity + 0.5 * structure_similarity
 
-def graph_edit_distance_with_node_similarity(args, G1, G2):
+def graph_edit_distance_with_node_similarity(embedding_model, G1, G2):
     """
     Calculate a modified Graph Edit Distance that incorporates node similarity.
     """
@@ -399,7 +417,7 @@ def graph_edit_distance_with_node_similarity(args, G1, G2):
     node_subst_cost = np.zeros((len(G1), len(G2)))
     for i, n1 in enumerate(G1.nodes(data=True)):
         for j, n2 in enumerate(G2.nodes(data=True)):
-            node_subst_cost[i, j] = 1 - node_similarity(args, n1[1], n2[1])
+            node_subst_cost[i, j] = 1 - node_similarity(embedding_model, n1[1], n2[1])
 
     # Edge substitution cost
     edge_subst_cost = 1.0
@@ -435,13 +453,12 @@ def graph_edit_distance_with_node_similarity(args, G1, G2):
 def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(args):
     """
     Here we use node and structural similarity as features to compute the similarity between two graphs, and then use these similarities to compute the uncertainty.
-    
     """
-    for idx, result in args.responses.items():
+    for idx, result in tqdm(args.responses.items(), desc='Calculating uncertainty'):
         responses = result['responses']
         
         # get the dataframe and the image from the index
-        image_data_base64 = args.filtered_df.loc[idx, 'image']
+        image_data_base64 = args.filtered_df.loc[int(idx), 'image']
         image_data = base64.b64decode(image_data_base64)
         image = Image.open(BytesIO(image_data))
         
@@ -459,10 +476,21 @@ def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(
 
         n = len(graphs)
         K = np.zeros((n, n))
-        for i in range(n):
-            for j in range(i, n):
-                K[i, j] = custom_kernel(args, graphs[i], graphs[j])
-                K[j, i] = K[i, j]    
+        # for i in range(n):
+        #     for j in range(i, n):
+        #         K[i, j] = custom_kernel(args, graphs[i], graphs[j])
+        #         K[j, i] = K[i, j]   
+        # Parallel computation of kernel values
+            # Parallel computation of kernel values
+        
+        embedding_model = args.embedding_model
+        results = Parallel(n_jobs=4)(delayed(compute_kernel)(embedding_model, graphs, i, j) for i in range(n) for j in range(i, n))
+        
+        for i, j, value in results:
+            K[i, j] = value
+            K[j, i] = value
+
+
         alpha = 0.5
         beta = 0.5
         ground_truth_index = 0
@@ -475,6 +503,85 @@ def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(
 
     return args.responses
 
+
+
+def compute_kernel(embedding_model, graphs, i, j):
+    value = custom_kernel(embedding_model, graphs[i], graphs[j])
+    return (i, j, value)
+
+
+# def process_single_result(args, idx, result):
+#     responses = result['responses']
+    
+#     # get the dataframe and the image from the index
+#     image_data_base64 = args.filtered_df.loc[int(idx), 'image']
+#     image_data = base64.b64decode(image_data_base64)
+#     image = Image.open(BytesIO(image_data))
+    
+#     # get caption from florence-large
+#     task_prompt = '<CAPTION>'
+#     caption = get_caption(args, task_prompt, image)  # proxy for ground truth
+
+#     graphs = []
+
+#     all_sentences = [caption[task_prompt]] + [s['explanation'] for s in responses]
+#     for sentence in all_sentences:
+#         entities, relationships = extract_entities_and_relationships(sentence)
+#         G = construct_graph(entities, relationships)
+#         graphs.append(G)    
+
+#     n = len(graphs)
+#     K = np.zeros((n, n))
+#     # for i in range(n):
+#     #     for j in range(i, n):
+#     #         K[i, j] = custom_kernel(args, graphs[i], graphs[j])
+#     #         K[j, i] = K[i, j]  
+#     # Parallel computation of kernel values
+#     results = Parallel(n_jobs=-1)(delayed(compute_kernel)(args, graphs, i, j) for i in range(n) for j in range(i, n))
+    
+#     for i, j, value in results:
+#         K[i, j] = value
+#         K[j, i] = value
+    
+#     alpha = 0.5
+#     beta = 0.5
+#     ground_truth_index = 0
+#     similarities_within_group = K[1:, 1:][np.triu_indices(n-1, k=1)]  # similarities within group of responses
+#     similarities_with_ground_truth = K[ground_truth_index, 1:]  # similarities with ground truth
+#     avg_similarity_within_group = np.mean(similarities_within_group)
+#     avg_similarity_with_ground_truth = np.mean(similarities_with_ground_truth)
+#     uncertainty = alpha * (1 - avg_similarity_within_group) + beta * (1 - avg_similarity_with_ground_truth)
+    
+#     return idx, uncertainty
+
+# def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(args):
+#     """
+#     Here we use node and structural similarity as features to compute the similarity between two graphs, 
+#     and then use these similarities to compute the uncertainty.
+#     """
+
+#         # Set the start method to 'spawn'
+#     multiprocessing.set_start_method('spawn', force=True)
+    
+#     # Determine the number of processes to use
+#     num_processes = multiprocessing.cpu_count()
+    
+#     # Create a partial function with args
+#     process_func = partial(process_single_result, args)
+    
+#     # Create a pool of worker processes
+#     with multiprocessing.Pool(processes=num_processes) as pool:
+#         # Use tqdm to show progress
+#         results = list(tqdm(pool.imap(process_func, args.responses.items()), 
+#                             total=len(args.responses), 
+#                             desc='Calculating uncertainty'))
+    
+#     # Update args.responses with the results
+#     for idx, uncertainty in results:
+#         args.responses[idx]['uncertainty'] = uncertainty
+
+#     return args.responses
+
 def quantify_uncertainty_from_image_captions_with_vec_similarity_bigram_overlap(args):
     """
     here we use vector similarity, word overlap, and bigram overlap as features to compute the similarity between two sentences, and then use these similarities to compute the uncertainty
@@ -484,7 +591,7 @@ def quantify_uncertainty_from_image_captions_with_vec_similarity_bigram_overlap(
         responses = result['responses']
         
         # get the dataframe and the image from the index
-        image_data_base64 = args.filtered_df.loc[idx, 'image']
+        image_data_base64 = args.filtered_df.loc[int(idx), 'image']
         image_data = base64.b64decode(image_data_base64)
         image = Image.open(BytesIO(image_data))
         
@@ -549,14 +656,39 @@ def load_args_from_config(config_path):
         config = yaml.safe_load(file)
     return argparse.Namespace(**config)
 
-def log_args(args, log_file):
-    with open(log_file, 'w') as file:
-        yaml.dump(vars(args), file)
+def is_serializable(obj):
+    """
+    Check if an object is serializable.
+    """
+    try:
+        yaml.dump(obj)
+        return True
+    except (TypeError, ValueError):
+        return False
+    
+def log_args(args):
+    # with open(log_file, 'w') as file:
+    #     yaml.dump(vars(args), file)
+    # args_dict = vars(args)
+    # clean_args_dict = {k: v for k, v in args_dict.items() if is_serializable(v)}
+    # print(args_dict)  # Debug print to check the contents
+    # with open(args.log_file, 'w') as file:
+    #     yaml.dump(args_dict, file)
+
+    args_dict = vars(args)
+    clean_args_dict = {}
+    for k, v in args_dict.items():
+        if is_serializable(v):
+            clean_args_dict[k] = v
+        else:
+            clean_args_dict[k] = str(v)  # Convert non-serializable objects to strings
+    with open(args.log_file, 'w') as file:
+        yaml.dump(clean_args_dict, file)
         
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config-file", help="Path to the config file.")
-    parser.add_argument("--log-file", help="Path to the log file.")
+    parser.add_argument("-c", "--config-file", help="Path to the config file.")
+    # parser.add_argument("--log-file", help="Path to the log file.")
     args = parser.parse_args()
 
     
@@ -565,32 +697,62 @@ if __name__ == "__main__":
     
     # Update args with loaded config_args
     args.__dict__.update(config_args.__dict__)
-    args.model_name = get_model_name_from_path(args.model_path)
-    args.tokenizer, args.model, args.image_processor, args.context_len = load_pretrained_model(
-        args.model_path, args.model_base, args.model_name
-    )
-    
-    # generate results and calculate uncertainty
-    df = pd.read_csv(args.data_path, sep = '\t')
-    args.filtered_df = df[df['category'].str.contains(args.category, case=False)]
-    args.responses = generate_responses(args)
-    
-    # Load the florence-large model
-    args.caption_model_id = 'microsoft/Florence-2-large'
-    args.caption_model = AutoModelForCausalLM.from_pretrained(args.caption_model_id, trust_remote_code=True).eval().cuda()
-    args.caption_model_processor = AutoProcessor.from_pretrained(args.caption_model_id, trust_remote_code=True)
 
-    args.embedding_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
-    if args.uncertainty_method == 'node_and_structural_similarity':
-        responses_with_uncertainty = quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(args)
-    elif args.uncertainty_method == 'vec_similarity_bigram_overlap':
-        responses_with_uncertainty = quantify_uncertainty_from_image_captions_with_vec_similarity_bigram_overlap(args)
-    else:
-        raise ValueError(f"Invalid uncertainty method: {args.uncertainty_method}")
+
+    if args.get_response:
+        args.model_name = get_model_name_from_path(args.model_path)
+        args.tokenizer, args.model, args.image_processor, args.context_len = load_pretrained_model(
+            args.model_path, args.model_base, args.model_name
+        )
         
-    # Save the results
-    with open(args.output_path, 'w') as file:
-        json.dump(responses_with_uncertainty, file)
+        # generate results and calculate uncertainty
+        df = pd.read_csv(args.data_path, sep = '\t')
+        args.filtered_df = df[df['category'].str.contains(args.category, case=False)]
+        args.responses = generate_responses(args)
 
-    # Log the arguments
-    log_args(config_args, args.log_file)
+        # Save the responses 
+        with open(args.responses_path, 'w') as file:
+            json.dump(args.responses, file)
+        
+        print("Responses saved successfully.")
+    
+    else:
+        print("No response generated since args.get_response is set to False.")
+
+    if args.get_uncertainty:
+        # if args.responses is None:
+        if not hasattr(args, 'responses'):
+            print("Loading responses from file.")
+            with open(args.responses_path, 'r') as file:
+                args.responses = json.load(file)
+
+        if not hasattr(args, 'filtered_df'):
+            df = pd.read_csv(args.data_path, sep = '\t')
+            args.filtered_df = df[df['category'].str.contains(args.category, case=False)]
+
+        # Uncertainty quantification
+        # Load the florence-large model 
+        args.caption_model_id = 'microsoft/Florence-2-large'
+        args.caption_model = AutoModelForCausalLM.from_pretrained(args.caption_model_id, trust_remote_code=True).eval().cuda()
+        args.caption_model_processor = AutoProcessor.from_pretrained(args.caption_model_id, trust_remote_code=True)
+
+        # Start multiprocessing 
+        multiprocessing.set_start_method('spawn', force=True)
+
+        # Embedding model for nodes of graphs
+        args.embedding_model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+        if args.uncertainty_method == 'node_and_structural_similarity':
+            responses_with_uncertainty = quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(args)
+        elif args.uncertainty_method == 'vec_similarity_bigram_overlap':
+            responses_with_uncertainty = quantify_uncertainty_from_image_captions_with_vec_similarity_bigram_overlap(args)
+        else:
+            raise ValueError(f"Invalid uncertainty method: {args.uncertainty_method}")
+            
+        # Save the results
+        with open(args.output_path, 'w') as file:
+            json.dump(responses_with_uncertainty, file)
+
+        print("Uncertainty Results saved successfully.")
+
+    # # Log the arguments
+    # log_args(args)
