@@ -49,7 +49,7 @@ from functools import partial
 from joblib import Parallel, delayed
 import os
 import numpy as np
-
+from collections import Counter
 
 # Disable tokenizers parallelism to avoid deadlocks
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -468,11 +468,25 @@ def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(
 
         graphs = []
 
-        all_sentences = [caption[task_prompt]] + [s['explanation'] for s in responses]
+        # all_sentences = [caption[task_prompt]] + [s['explanation'] for s in responses]
+        all_sentences = [caption[task_prompt]]
+        for s in responses:
+            try:
+                all_sentences.append(s['explanation'])
+            except Exception as e:
+                # print(f"Response {s} does not contain 'explanation' key. Skipping this response.")
+                print(f"An error occurred while processing response {s}: {e}. Skipping this response.")
+
+        
         for sentence in all_sentences:
-            entities, relationships = extract_entities_and_relationships(sentence)
-            G = construct_graph(entities, relationships)
-            graphs.append(G)    
+            # print(sentence)
+            # print('-'*50)
+            try:
+                entities, relationships = extract_entities_and_relationships(sentence)
+                G = construct_graph(entities, relationships)
+                graphs.append(G)    
+            except Exception as e:
+                print(f"Error constructing graph: {e}")
 
         n = len(graphs)
         K = np.zeros((n, n))
@@ -499,6 +513,9 @@ def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(
         avg_similarity_within_group = np.mean(similarities_within_group)
         avg_similarity_with_ground_truth = np.mean(similarities_with_ground_truth)
         uncertainty = alpha * (1 - avg_similarity_within_group) + beta * (1 - avg_similarity_with_ground_truth)
+        # save both the similarities
+        result['avg_similarity_within_group'] = avg_similarity_within_group
+        result['avg_similarity_with_ground_truth'] = avg_similarity_with_ground_truth
         result['uncertainty'] = uncertainty
 
     return args.responses
@@ -625,7 +642,30 @@ def quantify_uncertainty_from_image_captions_with_vec_similarity_bigram_overlap(
 
     return args.responses
 
+def calculate_uncertainty_by_self_consistency(args):
+    # uncertainty_results = {}
+        
+    for idx, results in tqdm(args.responses.items(), desc='Calculating uncertainty by self-consistency'):
+        if not results['responses']:
+            results['consistency'] = None
+            continue
+        else:
+            answers = [response['answer'] for response in results['responses']]
+            
+            # Count the occurrences of each answer
+            answer_counts = Counter(answers)
+            
+            # Find the proportion of the most common answer
+            most_common_answer_count = answer_counts.most_common(1)[0][1]
+            total_responses = len(answers)
+            
+            consistency = most_common_answer_count / total_responses
+            uncertainty = 1 - consistency  # Higher consistency means lower uncertainty
+            
+            results['uncertainty_by_self_consistency'] = uncertainty
 
+        
+    return args.responses
         
 def get_caption(args, task_prompt, image, text_input=None):
     if text_input is None:
@@ -745,6 +785,8 @@ if __name__ == "__main__":
             responses_with_uncertainty = quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(args)
         elif args.uncertainty_method == 'vec_similarity_bigram_overlap':
             responses_with_uncertainty = quantify_uncertainty_from_image_captions_with_vec_similarity_bigram_overlap(args)
+        elif args.uncertainty_method == 'self_consistency':
+            responses_with_uncertainty = calculate_uncertainty_by_self_consistency(args)
         else:
             raise ValueError(f"Invalid uncertainty method: {args.uncertainty_method}")
             
