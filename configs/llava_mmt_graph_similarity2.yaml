@@ -5,13 +5,13 @@ query: "Your query here"
 conv_mode: null
 sep: ","
 temperature: 1
-top_p: null
+top_p: 1 
 num_beams: 1
 max_new_tokens: 512
 data_path: "/home/ubuntu/Multimodal-Uncertainty-Quantification/datasets_/MMT-Bench/MMT-Bench_VAL.tsv"
 no_of_responses_each_sample: 20
 debug: false # debug = false runs for complete dataset, debug = true runs for num_images sample
-num_images: 2
+num_images: 5
 category: "hallucination"
 uncertainty_method: "node_and_structural_similarity"
 get_uncertainty: true
