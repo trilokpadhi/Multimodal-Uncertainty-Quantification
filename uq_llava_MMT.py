@@ -223,7 +223,11 @@ def calculate_uncertainty_graph_kernel(graphs):
 # Assuming `eval_model` and `Args` are already defined as in previous examples
 def generate_responses(args):
     if args.debug:
-        indices = random.sample(args.filtered_df.index.tolist(), args.num_images)
+        if args.keys:
+            indices = args.keys
+            print(f"Using debug, keys: {indices}")
+        else:
+            indices = random.sample(args.filtered_df.index.tolist(), args.num_images)
     else:
         indices = args.filtered_df.index.tolist()
     
