@@ -369,9 +369,9 @@ def encode_nodes(graph, embedding_model, vector_dict):
     for node in graph.nodes:
         graph.nodes[node]['vector'] = vector_dict[node]
 
-def custom_kernel(embedding_model, graph1, graph2):
+def graph_similarity_kernel(embedding_model, graph1, graph2):
     """
-    Calculate a custom kernel between two graphs.
+    Calculate a kernel value between two graphs based on node similarity and structural similarity.
     """
 
     vectors1 = []
@@ -424,7 +424,7 @@ def graph_edit_distance_with_node_similarity(embedding_model, G1, G2):
 
     # Node insertion/deletion cost
     node_ins_del_cost = 1.0
-
+ 
     # Edge insertion/deletion cost
     edge_ins_del_cost = 1.0
 
@@ -450,6 +450,12 @@ def graph_edit_distance_with_node_similarity(embedding_model, G1, G2):
 
     return similarity
 
+
+def graph_to_adj_list(graph):
+    """Convert a NetworkX graph to an adjacency list."""
+    adj_list = nx.to_dict_of_dicts(graph)
+    return adj_list
+
 def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(args):
     """
     Here we use node and structural similarity as features to compute the similarity between two graphs, and then use these similarities to compute the uncertainty.
@@ -468,7 +474,7 @@ def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(
 
         graphs = []
 
-        # all_sentences = [caption[task_prompt]] + [s['explanation'] for s in responses]
+        # Extract the explanation from the responses
         all_sentences = [caption[task_prompt]]
         for s in responses:
             try:
@@ -477,32 +483,41 @@ def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(
                 # print(f"Response {s} does not contain 'explanation' key. Skipping this response.")
                 print(f"An error occurred while processing response {s}: {e}. Skipping this response.")
 
-        
-        for sentence in all_sentences:
-            # print(sentence)
-            # print('-'*50)
+        # Construct graphs from the explanations and Save the graphs
+        for i, sentence in enumerate(all_sentences):
             try:
                 entities, relationships = extract_entities_and_relationships(sentence)
                 G = construct_graph(entities, relationships)
-                graphs.append(G)    
+                graphs.append(G)
+                
+                if i == 0:  # Ground truth graph
+                    result['ground_truth_graph'] = graph_to_adj_list(G)
+                else:
+                    responses[i - 1]['graph'] = graph_to_adj_list(G)
             except Exception as e:
                 print(f"Error constructing graph: {e}")
+                if i > 0:
+                    responses[i - 1]['graph'] = None
 
         n = len(graphs)
         K = np.zeros((n, n))
-        # for i in range(n):
-        #     for j in range(i, n):
-        #         K[i, j] = custom_kernel(args, graphs[i], graphs[j])
-        #         K[j, i] = K[i, j]   
-        # Parallel computation of kernel values
-            # Parallel computation of kernel values
+
+        """
+        Serialized Implementation
+        """
+        for i in range(n):
+            for j in range(i, n):
+                K[i, j] = graph_similarity_kernel(args.embedding_model, graphs[i], graphs[j])
+                K[j, i] = K[i, j]   
+        """
+        Parallel computation of kernel values
+        """
+        # embedding_model = args.embedding_model
+        # results = Parallel(n_jobs=4)(delayed(compute_graph_similarity_kernel)(embedding_model, graphs, i, j) for i in range(n) for j in range(i, n))
         
-        embedding_model = args.embedding_model
-        results = Parallel(n_jobs=4)(delayed(compute_kernel)(embedding_model, graphs, i, j) for i in range(n) for j in range(i, n))
-        
-        for i, j, value in results:
-            K[i, j] = value
-            K[j, i] = value
+        # for i, j, value in results:
+        #     K[i, j] = value
+        #     K[j, i] = value
 
 
         alpha = 0.5
@@ -522,82 +537,9 @@ def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(
 
 
 
-def compute_kernel(embedding_model, graphs, i, j):
-    value = custom_kernel(embedding_model, graphs[i], graphs[j])
+def compute_graph_similarity_kernel(embedding_model, graphs, i, j):
+    value = graph_similarity_kernel(embedding_model, graphs[i], graphs[j])
     return (i, j, value)
-
-
-# def process_single_result(args, idx, result):
-#     responses = result['responses']
-    
-#     # get the dataframe and the image from the index
-#     image_data_base64 = args.filtered_df.loc[int(idx), 'image']
-#     image_data = base64.b64decode(image_data_base64)
-#     image = Image.open(BytesIO(image_data))
-    
-#     # get caption from florence-large
-#     task_prompt = '<CAPTION>'
-#     caption = get_caption(args, task_prompt, image)  # proxy for ground truth
-
-#     graphs = []
-
-#     all_sentences = [caption[task_prompt]] + [s['explanation'] for s in responses]
-#     for sentence in all_sentences:
-#         entities, relationships = extract_entities_and_relationships(sentence)
-#         G = construct_graph(entities, relationships)
-#         graphs.append(G)    
-
-#     n = len(graphs)
-#     K = np.zeros((n, n))
-#     # for i in range(n):
-#     #     for j in range(i, n):
-#     #         K[i, j] = custom_kernel(args, graphs[i], graphs[j])
-#     #         K[j, i] = K[i, j]  
-#     # Parallel computation of kernel values
-#     results = Parallel(n_jobs=-1)(delayed(compute_kernel)(args, graphs, i, j) for i in range(n) for j in range(i, n))
-    
-#     for i, j, value in results:
-#         K[i, j] = value
-#         K[j, i] = value
-    
-#     alpha = 0.5
-#     beta = 0.5
-#     ground_truth_index = 0
-#     similarities_within_group = K[1:, 1:][np.triu_indices(n-1, k=1)]  # similarities within group of responses
-#     similarities_with_ground_truth = K[ground_truth_index, 1:]  # similarities with ground truth
-#     avg_similarity_within_group = np.mean(similarities_within_group)
-#     avg_similarity_with_ground_truth = np.mean(similarities_with_ground_truth)
-#     uncertainty = alpha * (1 - avg_similarity_within_group) + beta * (1 - avg_similarity_with_ground_truth)
-    
-#     return idx, uncertainty
-
-# def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(args):
-#     """
-#     Here we use node and structural similarity as features to compute the similarity between two graphs, 
-#     and then use these similarities to compute the uncertainty.
-#     """
-
-#         # Set the start method to 'spawn'
-#     multiprocessing.set_start_method('spawn', force=True)
-    
-#     # Determine the number of processes to use
-#     num_processes = multiprocessing.cpu_count()
-    
-#     # Create a partial function with args
-#     process_func = partial(process_single_result, args)
-    
-#     # Create a pool of worker processes
-#     with multiprocessing.Pool(processes=num_processes) as pool:
-#         # Use tqdm to show progress
-#         results = list(tqdm(pool.imap(process_func, args.responses.items()), 
-#                             total=len(args.responses), 
-#                             desc='Calculating uncertainty'))
-    
-#     # Update args.responses with the results
-#     for idx, uncertainty in results:
-#         args.responses[idx]['uncertainty'] = uncertainty
-
-#     return args.responses
 
 def quantify_uncertainty_from_image_captions_with_vec_similarity_bigram_overlap(args):
     """
