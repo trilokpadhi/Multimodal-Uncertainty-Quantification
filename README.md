@@ -19,7 +19,6 @@
 - [MMT-Bench](https://github.com/OpenGVLab/MMT-Bench)
 - [MM-Bench](https://github.com/open-compass/MMBench)
 - [MLLM-Bench](https://github.com/FreedomIntelligence/MLLM-Bench/)
-- []
 
 
 ### Useful Commands 
