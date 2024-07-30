@@ -1,0 +1,70 @@
+Prompt Style 1
+----------------
+    prompt = """
+    Analyze the following text and extract concepts:
+    Text: {}
+    Return the results as a JSON object with the following structure:
+    {{'concepts': ''}}
+    """
+    
+Prompt Style 2
+----------------
+    prompt = f"""
+    Analyze the following text and extract entities, attributes, and relationships. Provide the output as a JSON object with the following structure:
+
+    {{
+        "entities": [
+            {{"type": "whole", "name": "motorcycle"}},
+            {{"type": "whole", "name": "doors"}}
+        ],
+        "attributes": [
+            {{"type": "color", "entity": "motorcycle", "value": "blue"}},
+            {{"type": "state", "entity": "doors", "value": "painted"}},
+            {{"type": "state", "entity": "door paint", "value": "chipped"}},
+            {{"type": "state", "entity": "motorcycle", "value": "parked"}}
+        ],
+        "relations": [
+            {{"type": "spatial", "entity1": "motorcycle", "entity2": "doors", "description": "next to"}}
+        ]
+    }}
+
+    Entity Types:
+    - Whole: Complete objects
+    - Part: Components of entities
+
+    Attribute Types:
+    - State: Current condition or status
+    - Color: Visual color
+    - Type: Specific category or classification
+    - Material: Substance the entity is made of
+    - Count: Numerical quantity
+    - Texture: Surface feel or appearance
+    - Text: Visible text or writing
+    - Shape: Geometric form
+    - Size: Relative or absolute dimensions
+
+    Relationship Types:
+    - Spatial: Physical positioning (e.g., next to, above, inside)
+    - Action: Dynamic interactions (e.g., kicks, holds, pushes)
+
+    Example:
+    Text: "A blue motorcycle parked by paint chipped doors."
+    Output:
+    {{
+        "entities": [
+            {{"type": "whole", "name": "motorcycle"}},
+            {{"type": "whole", "name": "doors"}}
+        ],
+        "attributes": [
+            {{"type": "color", "entity": "motorcycle", "value": "blue"}},
+            {{"type": "state", "entity": "doors", "value": "painted"}},
+            {{"type": "state", "entity": "door paint", "value": "chipped"}},
+            {{"type": "state", "entity": "motorcycle", "value": "parked"}}
+        ],
+        "relations": [
+            {{"type": "spatial", "entity1": "motorcycle", "entity2": "doors", "description": "next to"}}
+            
+    """
+
+--------
+
