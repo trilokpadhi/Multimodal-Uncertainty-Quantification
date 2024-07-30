@@ -506,6 +506,7 @@ def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(
         n = len(graphs)
         K = np.zeros((n, n))
 
+
         """
         Serialized Implementation
         """
@@ -523,7 +524,9 @@ def quantify_uncertainty_from_image_captions_with_node_and_structural_simlarity(
         #     K[i, j] = value
         #     K[j, i] = value
 
-
+        # save the K - Kernel matrix
+        result['kernel_matrix'] = K.tolist()
+        
         alpha = 0.5
         beta = 0.5
         ground_truth_index = 0
