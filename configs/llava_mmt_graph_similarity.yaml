@@ -17,7 +17,7 @@ uncertainty_method: "node_and_structural_similarity"
 get_uncertainty: true
 get_response: false
 # outputs and logs
-output_path: "debug_bin_1_llava_mmt_output_uq_io_graph_similarity_temp_1_topp_1.json" # uq from both input and output
+output_path: "debug_bin_1_kernel_llava_mmt_output_uq_io_graph_similarity_temp_1_topp_1.json" # uq from both input and output
 responses_path: "debug_bin_1_llava_mmt_output_temp_1_topp_1.json" # uq from both input and output
 log_file: "llava_mmt.log"
 keys: [2789, 2790,2814,2815,2855,2866]
