@@ -1,0 +1,26 @@
+model_path: "liuhaotian/llava-v1.6-vicuna-7b"
+model_base: null
+image_file: "path/to/image.png"
+query: "Your query here"
+conv_mode: null
+sep: ","
+temperature: 1
+top_p: 1 
+num_beams: 1
+max_new_tokens: 512
+# dataset: "gqa"
+dataset_type: "json" # json if dataset is in json format, dataframe if dataset is in pandas dataframe format
+data_path: "/home/ubuntu/Multimodal-Uncertainty-Quantification/datasets_/GQA/questions1.2/train_all_questions/train_all_questions_0.json"
+no_of_responses_each_sample: 20
+debug: false # debug = false runs for complete dataset, debug = true runs for num_images sample
+num_images: 4
+samples: 1000 # number of samples to run
+category: "hallucination"
+uncertainty_method: "log_likelihood"
+get_uncertainty: true
+get_response: true
+# outputs and logs
+uncertainty_path: "runs/llava_gqa_llama3_sg_grounding_temp_1_topp_1_dp_1000.json" # uq from both input and output
+responses_path: "runs/llava_gqa_temp_1_topp_1_dp_1000.json" # uq from both input and output
+log_file: "llava_mmt.log"
+# keys: [2789, 2790] # not used when get_uncertainty is true
