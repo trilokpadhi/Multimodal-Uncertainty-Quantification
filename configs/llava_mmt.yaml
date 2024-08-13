@@ -4,13 +4,20 @@ image_file: "path/to/image.png"
 query: "Your query here"
 conv_mode: null
 sep: ","
-temperature: 0.01
-top_p: null
+temperature: 1
+top_p: 1 
 num_beams: 1
 max_new_tokens: 512
-data_path: "/home/ubuntu/Multimodal-Uncertainty-Quantification/datasets/MMT-Bench/MMT-Bench_VAL.tsv"
-no_of_responses_each_sample: 10
-output_path: "llava_mmt_output1_uq_io.json" # uq from both input and output
-debug: true
-num_images: 20
+data_path: "/home/ubuntu/Multimodal-Uncertainty-Quantification/datasets_/MMT_Bench/MMT-Bench_VAL.tsv"
+no_of_responses_each_sample: 20
+debug: false # debug = false runs for complete dataset, debug = true runs for num_images sample
+num_images: 4
 category: "hallucination"
+uncertainty_method: "node_and_structural_similarity"
+get_uncertainty: false
+get_response: true
+# outputs and logs
+output_path: "debug_responses/llava_mmt_output_uq_io_graph_llama3_similarity_temp_1_topp_1.json" # uq from both input and output
+responses_path: "debug_responses/llava_mmt_output_temp_1_topp_1.json" # uq from both input and output
+log_file: "llava_mmt.log"
+keys: [2789, 2790] # not used when get_uncertainty is true or debug is false

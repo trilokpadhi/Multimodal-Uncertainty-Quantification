@@ -56,4 +56,9 @@ RuntimeError: Failed to import transformers.models.llama.modeling_llama because 
 ```bash
 pip install transformers==4.33.0
 ```
+- How to get log probs from LLava [here](https://github.com/haotian-liu/LLaVA/issues/108)
 
+- To get process killed: 
+```bash
+ps aux | grep "python -c" | grep -v grep | awk '{print $2}' | xargs -r kill -9
+```

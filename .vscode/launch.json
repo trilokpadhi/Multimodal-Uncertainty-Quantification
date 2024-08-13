@@ -5,13 +5,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "llava MMT debugger",
+            "name": "llava uq debugger with args",
             "type": "python",
             "request": "launch",
-            "program": "/home/ubuntu/Multimodal-Uncertainty-Quantification/uq_llava_MMT.py",
+            "program": "/home/ubuntu/Multimodal-Uncertainty-Quantification/uq_llava_GQA.py",
             "console": "integratedTerminal",
-            "args": ["--config-file", "configs/llava_mmt.yaml", "--log-file", "logs/llava_mmt.log"],
-            "python": "/home/ubuntu/miniconda3/envs/llava/bin/python3.10"
+            "args": ["--config-file", "configs/llava_gqa.yaml"],
+            "python": "/opt/conda/envs/llava/bin/python"
+        },
+        {
+            "name": "llava environment debugger",
+            "type": "python",
+            "request": "launch",
+            "program": "/home/ubuntu/Multimodal-Uncertainty-Quantification/playground/llava_logprobs.py",
+            "console": "integratedTerminal",
+            "python": "/opt/conda/envs/llava/bin/python"
         }
     ]
 }
