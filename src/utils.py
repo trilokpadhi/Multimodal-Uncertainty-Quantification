@@ -20,6 +20,7 @@ import regex as re
 import yaml
 import argparse
 import json
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # from .calculate_uncertainty import calculate_entropy_from_log_probs
 from sentence_transformers import SentenceTransformer
@@ -48,8 +49,11 @@ class ModelArgs:
         self.image_file = None
         
         # for llama3
-        self.llama_tokenizer = args.llama_tokenizer
-        self.llama_model = args.llama_model
+        self.llama_tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B-Instruct")
+        self.llama_model = AutoModelForCausalLM.from_pretrained("meta-llama/Meta-Llama-3-8B-Instruct",
+                                                                torch_dtype=torch.bfloat16,
+                                                                device_map="auto")
+        
         
         # for sentence transformer
         self.sentence_transformer = SentenceTransformer('paraphrase-MiniLM-L6-v2')
