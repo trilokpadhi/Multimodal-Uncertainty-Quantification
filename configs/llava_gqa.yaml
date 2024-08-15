@@ -18,7 +18,7 @@ samples: 1000 # number of samples to run
 category: "hallucination"
 uncertainty_method: "log_likelihood"
 get_uncertainty: true
-get_response: true
+get_response: false
 # outputs and logs
 uncertainty_path: "runs/llava_gqa_llama3_sg_grounding_temp_1_topp_1_dp_1000.json" # uq from both input and output
 responses_path: "runs/llava_gqa_temp_1_topp_1_dp_1000.json" # uq from both input and output

@@ -62,3 +62,8 @@ pip install transformers==4.33.0
 ```bash
 ps aux | grep "python -c" | grep -v grep | awk '{print $2}' | xargs -r kill -9
 ```
+- To run on specific GPUs:
+```bash
+CUDA_VISIBLE_DEVICES=1,2,3,4,5 nohup python -m src.main --config-file configs/llava_gqa.yaml > llava_gqa.out 2>&1 &
+```
+
