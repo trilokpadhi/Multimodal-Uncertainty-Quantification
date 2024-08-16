@@ -1,3 +1,4 @@
+# nohup python -m src.main --config-file configs/llava_gqa.yaml > llava_gqa.log 2>&1 &
 import argparse
 import json
 import pandas as pd
@@ -5,6 +6,12 @@ from .generate_responses import generate_responses
 from .calculate_uncertainty import calculate_uncertainty_by_grounding
 from .utils import load_args_from_config
 import torch.multiprocessing as mp
+from huggingface_hub import login
+
+# Authenticate
+username = "tpadhi1"
+token = "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"
+login(token=token)
 
 def main():
     parser = argparse.ArgumentParser()
