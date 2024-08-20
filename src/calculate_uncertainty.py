@@ -112,7 +112,7 @@ def calculate_uncertainty_by_grounding_worker(args, keys, results_queue):
                     if not explanation:
                         logging.warning(f"No explanation found for response {j}. Skipping...")
                         continue
-
+                    
                     llama3_response_graph = extract_entities_and_relationships_llama3(model_args, explanation)
                     llama3_response_graph_jsonified = extract_json_from_text(llama3_response_graph)
                     response_triples = extract_triples_from_llama3_json(llama3_response_graph_jsonified)
@@ -152,34 +152,57 @@ def calculate_uncertainty_by_grounding_worker(args, keys, results_queue):
         logging.error(f"An unexpected error occurred in process {mp.current_process().pid}: {e}")
 
 def calculate_uncertainty_by_grounding(args):
-    try:
-        keys = list(args.responses.keys())
-        num_processes = min(torch.cuda.device_count() if torch.cuda.is_available() else mp.cpu_count(), 6)
-        chunk_size = max(1, len(keys) // num_processes)
-        chunks = [keys[i:i + chunk_size] for i in range(0, len(keys), chunk_size)]
-        logging.info(f"Divided into {len(chunks)} chunks")
+
+    if not args.debug:
+        try:
+            keys = list(args.responses.keys())[:4]
+            num_processes = min(torch.cuda.device_count() if torch.cuda.is_available() else mp.cpu_count(), 6)
+            chunk_size = max(1, len(keys) // num_processes)
+            chunks = [keys[i:i + chunk_size] for i in range(0, len(keys), chunk_size)]
+            logging.info(f"Divided into {len(chunks)} chunks")
+            
+            results_queue = mp.Queue()
+            processes = []
+
+            for i in range(num_processes):
+                p = mp.Process(target=calculate_uncertainty_by_grounding_worker, args=(args, chunks[i], results_queue))
+                p.start()
+                processes.append(p)
+
+            results = {}
+            for p in processes:
+                p.join()
+
+            while not results_queue.empty():
+                result = results_queue.get()
+                for idx, responses in result.items():
+                    if idx not in results:
+                        results[idx] = []
+                    results[idx].extend(responses)
+
+            # Final save of all results
+            save_results_if_not_empty(results, args.uncertainty_path)
         
-        results_queue = mp.Queue()
-        processes = []
+        except Exception as e:
+            logging.error(f"An unexpected error occurred in calculate_uncertainty_by_grounding: {e}")
+    else:
+        # Non-parallel execution
+        try:
+            keys = list(args.responses.keys())[:args.samples]
+            results = {}
+            results_queue = []
 
-        for i in range(num_processes):
-            p = mp.Process(target=calculate_uncertainty_by_grounding_worker, args=(args, chunks[i], results_queue))
-            p.start()
-            processes.append(p)
-
-        results = {}
-        for p in processes:
-            p.join()
-
-        while not results_queue.empty():
-            result = results_queue.get()
+            # Directly process all keys using the worker function
+            result = calculate_uncertainty_by_grounding_worker(args, keys, results_queue)
+            
             for idx, responses in result.items():
                 if idx not in results:
                     results[idx] = []
                 results[idx].extend(responses)
 
-        # Final save of all results
-        save_results_if_not_empty(results, args.uncertainty_path)
-    
-    except Exception as e:
-        logging.error(f"An unexpected error occurred in calculate_uncertainty_by_grounding: {e}")
+            # Final save of all results
+            save_results_if_not_empty(results, args.uncertainty_path)
+        
+        except Exception as e:
+            logging.error(f"An unexpected error occurred in calculate_uncertainty_by_grounding: {e}")
+

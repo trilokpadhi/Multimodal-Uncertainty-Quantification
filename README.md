@@ -61,6 +61,7 @@ pip install transformers==4.33.0
 - To get process killed: 
 ```bash
 ps aux | grep "python -c" | grep -v grep | awk '{print $2}' | xargs -r kill -9
+ps aux | grep "/opt/conda/envs/llava/bin/python" | grep -v grep | awk '{print $2}' | xargs -r kill -9
 ```
 - To run on specific GPUs:
 ```bash
