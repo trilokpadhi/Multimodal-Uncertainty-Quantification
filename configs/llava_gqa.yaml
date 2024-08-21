@@ -12,14 +12,14 @@ max_new_tokens: 512
 dataset_type: "json" # json if dataset is in json format, dataframe if dataset is in pandas dataframe format
 data_path: "/home/ubuntu/Multimodal-Uncertainty-Quantification/datasets_/GQA/questions1.2/train_all_questions/train_all_questions_0.json"
 no_of_responses_each_sample: 20
-debug: true # debug = false runs for complete dataset, debug = true runs for num_images sample in serial mode and not in multi thread
-samples: 4 # number of samples to run
+debug: false # debug = false runs for complete dataset, debug = true runs for num_images sample in serial mode and not in multi thread
+samples: 5 # number of samples to run
 category: "hallucination"
 uncertainty_method: "log_likelihood"
-get_uncertainty: true
-get_response: false
+get_uncertainty: false
+get_response: true
 # outputs and logs
-uncertainty_path: "runs/llava_gqa_llama3_sg_grounding_temp_1_topp_1_dp_1000.json" # uq from both input and output
-responses_path: "runs/llava_gqa_temp1_topp1_dp_1000.json" # uq from both input and output
+uncertainty_path: "runs/llava_gqa_llama3_sg_grounding_temp_1_topp_1_dp_100.pkl" # uq from both input and output
+responses_path: "runs/llava_gqa_temp1_topp1_dp_100.pkl" # uq from both input and output
 log_file: "llava_mmt.log"
 # keys: [2789, 2790] # not used when get_uncertainty is true

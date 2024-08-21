@@ -8,10 +8,11 @@
             "name": "llava uq debugger with args",
             "type": "python",
             "request": "launch",
-            "program": "/home/ubuntu/Multimodal-Uncertainty-Quantification/uq_llava_GQA.py",
+            "program": "/home/ubuntu/Multimodal-Uncertainty-Quantification/src/main.py",
             "console": "integratedTerminal",
             "args": ["--config-file", "configs/llava_gqa.yaml"],
-            "python": "/opt/conda/envs/llava/bin/python"
+            "python": "/opt/conda/envs/llava/bin/python",
+            "cwd": "/home/ubuntu/Multimodal-Uncertainty-Quantification/"
         },
         {
             "name": "llava environment debugger",

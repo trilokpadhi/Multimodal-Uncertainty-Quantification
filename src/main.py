@@ -2,11 +2,16 @@
 import argparse
 import json
 import pandas as pd
-from .generate_responses import generate_responses
-from .calculate_uncertainty import calculate_uncertainty_by_grounding
-from .utils import load_args_from_config
+from generate_responses import generate_responses
+from calculate_uncertainty import calculate_uncertainty_by_grounding
+from utils import load_args_from_config
 import torch.multiprocessing as mp
 from huggingface_hub import login
+import pickle
+import warnings
+
+# Suppress all warnings
+warnings.filterwarnings("ignore")
 
 # Authenticate
 username = "tpadhi1"
@@ -36,13 +41,16 @@ def main():
     else:
         raise ValueError(f"Invalid dataset type: {args.dataset_type}")
         
-    mp.set_start_method('spawn')
+    if not args.debug:
+        mp.set_start_method('spawn')
 
     # Generate responses if required
     if args.get_response:        
         args.responses = generate_responses(args)
-        with open(args.responses_path, 'w') as file:
-            json.dump(args.responses, file)
+        # with open(args.responses_path, 'w') as file:
+        #     json.dump(args.responses, file)
+        with open(args.responses_path, 'wb') as file:
+            pickle.dump(args.responses, file)
         print("Responses saved successfully.")
     else:
         print("No response generated since args.get_response is set to False.") 
@@ -51,9 +59,10 @@ def main():
     if args.get_uncertainty:
         if not hasattr(args, 'responses'):
             print("Loading responses from file.")
-            with open(args.responses_path, 'r') as file:
-                args.responses = json.load(file)
-        
+            # with open(args.responses_path, 'r') as file:
+            #     args.responses = json.load(file)
+            with open(args.responses_path, 'rb') as file:
+                args.responses = pickle.load(file)
         # Uncertainty results are now directly saved within the function
         calculate_uncertainty_by_grounding(args)
     else:

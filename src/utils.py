@@ -152,28 +152,47 @@ def eval_model(model_args):
             output_scores=True
         )
 
-    print(f'Process {mp.current_process().pid}: Model.generate completed')
+    # """
+    # Code to calculate the entropy of the sequence
+    # """
+    # print(f'Process {mp.current_process().pid}: Model.generate completed')
 
-    scores = torch.stack(outputs.scores, dim=1)
-    probabilities = torch.softmax(scores, dim=-1)
+    # scores = torch.stack(outputs.scores, dim=1)
+    # probabilities = torch.softmax(scores, dim=-1)
 
-    epsilon = 1e-10
-    log_probabilities = torch.log(probabilities + epsilon)
+    # epsilon = 1e-10
+    # log_probabilities = torch.log(probabilities + epsilon)
 
-    log_probabilities_length = log_probabilities.shape[1]
-    generated_tokens = outputs.sequences[:, -log_probabilities_length:]
+    # log_probabilities_length = log_probabilities.shape[1]
+    # generated_tokens = outputs.sequences[:, -log_probabilities_length:]
 
-    token_probs = torch.gather(log_probabilities, 2, generated_tokens.unsqueeze(-1)).squeeze(-1)
+    # token_probs = torch.gather(log_probabilities, 2, generated_tokens.unsqueeze(-1)).squeeze(-1)
 
-    entropy = calculate_entropy_from_log_probs(token_probs)
-    print(f"Entropy: {entropy}")
-    print('-'*50)
+    # entropy = calculate_entropy_from_log_probs(token_probs)
+    # print(f"Entropy: {entropy}")
+    # print('-'*50)
 
     decoded_outputs = model_args.tokenizer.batch_decode(outputs.sequences, skip_special_tokens=True)
     print('outputs:', decoded_outputs[0].strip())
     print('-'*50)
+    
+    # Stack the scores (logits) for each token
+    scores = torch.stack(outputs.scores, dim=1)
 
-    return decoded_outputs[0].strip(), entropy.cuda().item()
+    # Apply softmax to convert logits to probabilities
+    probabilities = torch.softmax(scores, dim=-1)
+
+    # # Gather the probabilities of the generated tokens
+    probabilities_length = probabilities.shape[1]
+    generated_tokens = outputs.sequences[:, -probabilities_length:]
+
+    # Select the probabilities corresponding to the generated tokens
+    token_probs = torch.gather(probabilities, 2, generated_tokens.unsqueeze(-1)).squeeze(-1)
+
+    # Calculate the conditional probability of the entire sequence
+    sequence_probabilities = token_probs.prod(dim=1)
+
+    return decoded_outputs[0].strip(), (sequence_probabilities.cpu().item(), scores, generated_tokens)
 
 
 def load_args_from_config(config_path):
