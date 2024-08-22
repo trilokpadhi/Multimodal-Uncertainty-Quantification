@@ -1,4 +1,5 @@
 # nohup python -m src.main --config-file configs/llava_gqa.yaml > llava_gqa.log 2>&1 &
+# nohup python src/main.py --config-file configs/llava_gqa.yaml > llava_gqa.log 2>&1 &
 import argparse
 import json
 import pandas as pd
@@ -46,12 +47,7 @@ def main():
 
     # Generate responses if required
     if args.get_response:        
-        args.responses = generate_responses(args)
-        # with open(args.responses_path, 'w') as file:
-        #     json.dump(args.responses, file)
-        with open(args.responses_path, 'wb') as file:
-            pickle.dump(args.responses, file)
-        print("Responses saved successfully.")
+        generate_responses(args)
     else:
         print("No response generated since args.get_response is set to False.") 
 
