@@ -32,7 +32,7 @@ def calculate_entropy_from_log_probs(log_probs):
     entropy = -torch.sum(probs * log_probs)
     return entropy
 
-class ModelArgs:
+class modeModelArgs:
     def __init__(self, args):
         self.model_path = args.model_path
         self.model_base = args.model_base

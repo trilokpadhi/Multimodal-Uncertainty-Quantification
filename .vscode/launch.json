@@ -6,7 +6,7 @@
     "configurations": [
         {
             "name": "llava uq debugger with args",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "/home/ubuntu/Multimodal-Uncertainty-Quantification/src/main.py",
             "console": "integratedTerminal",
@@ -16,11 +16,20 @@
         },
         {
             "name": "llava environment debugger",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "program": "/home/ubuntu/Multimodal-Uncertainty-Quantification/playground/llava_logprobs.py",
             "console": "integratedTerminal",
             "python": "/opt/conda/envs/llava/bin/python"
-        }
+        },
+        {
+            "name": "python debugger",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "python": "/opt/conda/envs/llava/bin/python"
+        },
+
     ]
 }
