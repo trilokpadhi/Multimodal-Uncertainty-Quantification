@@ -3,7 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Load results from JSON file
-with open('results.json', 'r') as f:
+# with open('results.json', 'r') as f:
+#     results = json.load(f)
+
+# with open('/home/ubuntu/Multimodal-Uncertainty-Quantification/results_with_selected_tokens.json', 'r') as f:
+#     results = json.load(f)
+
+with open('/home/ubuntu/Multimodal-Uncertainty-Quantification/results_with_selected_tokens.json', 'r') as f:
     results = json.load(f)
 
 # Step 1: Calculate confidence
@@ -45,7 +51,8 @@ plt.title('Average Accuracy vs. Confidence')
 plt.grid(True)
 
 # Save the plot
-plt.savefig('average_accuracy_vs_confidence.png')
+# plt.savefig('average_accuracy_vs_confidence.png')
+plt.savefig('average_accuracy_vs_confidence_all_tokens.png')
 
 # Optionally, display the plot
 plt.show()

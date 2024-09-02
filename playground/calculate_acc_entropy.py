@@ -11,25 +11,38 @@ tokenizer = AutoTokenizer.from_pretrained("potsawee/deberta-v3-large-mnli")
 model = AutoModelForSequenceClassification.from_pretrained("potsawee/deberta-v3-large-mnli")
 
 # Define functions
-def compute_predictive_entropy(raw_logits, token_ids):
+def compute_predictive_entropy(raw_logits, token_ids_list):
     """
     Compute predictive entropy given raw logits and sequence of token IDs.
     """
     try:
         log_probs = []
-        for logits in raw_logits:
-            log_probs.append(F.log_softmax(logits, dim=-1))
+        for logits, token_ids in zip(raw_logits, token_ids_list):
+            try:
+                # log_probs.append(F.log_softmax(logits, dim=-1))
+                log_softmax_for_all_tokens = F.log_softmax(logits, dim=-1)
+                """
+                for selected tokens
+                """
+                start_index = token_ids[0].tolist().index(362)
+                end_index = token_ids[0].tolist().index(5527)
+                log_softmax_for_selected_tokens = log_softmax_for_all_tokens[:, start_index:end_index, :]
+                log_prob = log_softmax_for_selected_tokens[0, torch.arange(log_softmax_for_selected_tokens.shape[1]), token_ids[:, start_index: end_index]]
+                log_probs.append(torch.mean(log_prob, dim=1))
+                """
+                Method 2: where i only take tokens between tokens with IDs 362 (“ation”) and 5527 (“conf”) within the sequence.
+                """                   
+                # log_prob = log_softmax_for_all_tokens[0, torch.arange(log_softmax_for_all_tokens.shape[1]), token_ids]
+                # log_probs.append(torch.mean(log_prob, dim=1))
+            except Exception as e:
+                print(f'Error calculating log probs {e}')
 
-        observed_log_probs = []
-        for log_prob, token_id in zip(log_probs, token_ids):
-            observed_log_prob = log_prob[0, torch.arange(log_prob.shape[1]), token_id]
-            observed_log_probs.append(torch.mean(observed_log_prob, dim=1))
-
-        entropy = -torch.stack(observed_log_probs).mean(dim=0).squeeze()
+        entropy = -torch.stack(log_probs).mean(dim=0).squeeze()
         return entropy.item()
     except Exception as e:
         print(f"Error calculating entropy: {e}")
         return None
+    
 
 def check_entailment(textA, textB):
     """
@@ -125,7 +138,7 @@ print(results)
 
 # Optionally, save the results to a JSON file
 try:
-    with open('/home/ubuntu/Multimodal-Uncertainty-Quantification/results.json', 'w') as f:
+    with open('/home/ubuntu/Multimodal-Uncertainty-Quantification/results_with_selected_tokens.json', 'w') as f:
         json.dump(results, f, indent=4)
 except Exception as e:
     print(f"Error saving results to JSON file: {e}")
