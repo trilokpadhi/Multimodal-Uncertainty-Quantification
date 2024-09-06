@@ -9,22 +9,27 @@ import matplotlib.pyplot as plt
 # with open('/home/ubuntu/Multimodal-Uncertainty-Quantification/results_with_selected_tokens.json', 'r') as f:
 #     results = json.load(f)
 
-with open('/home/ubuntu/Multimodal-Uncertainty-Quantification/results_with_selected_tokens.json', 'r') as f:
+with open('/home/ubuntu/Multimodal-Uncertainty-Quantification/results_with_selected_tokens_new.json', 'r') as f:
     results = json.load(f)
 
 # Step 1: Calculate confidence
-confidences = []
+# confidences = []
+entropies = []
 accuracies = []
 
 for data in results.values():
     entropy = data['entropy']
     accuracy = data['accuracy']
-    confidence = 1 - entropy
-    confidences.append(confidence)
+    # confidence = 1 - entropy
+    entropies.append(entropy)
+    # confidences.append(confidence)
     accuracies.append(accuracy)
 
 # Step 2: Bin confidence values
-confidences = np.array(confidences)
+# confidences = np.array(confidences)
+entropies = np.array(entropies)
+entropies = (entropies - np.min(entropies))/(np.max(entropies) - np.min(entropies))
+confidences = 1 - entropies
 accuracies = np.array(accuracies)
 
 bins = np.linspace(0, 1, 11)  # Create 10 bins between 0 and 1
@@ -49,10 +54,11 @@ plt.xlabel('Confidence')
 plt.ylabel('Average Accuracy')
 plt.title('Average Accuracy vs. Confidence')
 plt.grid(True)
+plt.xlim(0, 1)  # Ensure x-axis goes from 0 to 1
 
 # Save the plot
 # plt.savefig('average_accuracy_vs_confidence.png')
-plt.savefig('average_accuracy_vs_confidence_all_tokens.png')
+plt.savefig('average_accuracy_vs_confidence_results_with_selected_tokens_new.png')
 
 # Optionally, display the plot
 plt.show()

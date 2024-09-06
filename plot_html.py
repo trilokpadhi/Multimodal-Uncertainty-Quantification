@@ -12,7 +12,7 @@ import itertools
 
 from llava.model.builder import load_pretrained_model
 from llava.mm_utils import get_model_name_from_path
-import ipdb
+# import ipdb
 
 # Initialize the tokenizer
 model_path = "liuhaotian/llava-v1.6-vicuna-7b"
