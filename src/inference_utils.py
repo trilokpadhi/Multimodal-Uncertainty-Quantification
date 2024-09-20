@@ -19,7 +19,25 @@ from data_utils import get_dataloader
 from transformers import AutoProcessor, LlavaForConditionalGeneration, AutoModelForMaskGeneration, pipeline
 from tqdm import tqdm
 import json
+import psutil
+import torch
+import GPUtil
 
+def log_memory_usage(rank):
+    # Log GPU memory usage
+    print(f"GPU {rank} - Current Memory Allocated: {torch.cuda.memory_allocated(f'cuda:{rank}') / (1024 ** 2):.2f} MB")
+    print(f"GPU {rank} - Max Memory Allocated: {torch.cuda.max_memory_allocated(f'cuda:{rank}') / (1024 ** 2):.2f} MB")
+    
+    # Log CPU memory usage
+    process = psutil.Process(os.getpid())
+    mem_info = process.memory_info()
+    print(f"CPU Memory Usage: {mem_info.rss / (1024 ** 2):.2f} MB")
+
+    # Log overall GPU memory usage using GPUtil
+    gpus = GPUtil.getGPUs()
+    for gpu in gpus:
+        print(f"GPU {gpu.id} - Memory Free: {gpu.memoryFree}MB, Memory Used: {gpu.memoryUsed}MB, Memory Total: {gpu.memoryTotal}MB")
+        
 # from src.extraction_utils import extract_json_from_text
 def extract_json_from_text(text):
     """Extracts JSON from the given text."""
@@ -41,7 +59,7 @@ def generate_explanations_MM(model, processor, sample, rank, params):
     inputs = processor(images=raw_image, text=prompt, return_tensors="pt").to(torch_device, torch.float16)
     
     # for i in range(20):
-    for i in tqdm(range(params['no_of_responses_sampled_per_image'])):
+    for i in range(params['no_of_responses_sampled_per_image']):
         outputs = model.generate(
             input_ids=inputs['input_ids'],        # Text tokens
             pixel_values=inputs['pixel_values'],  # Image tokens
@@ -204,7 +222,9 @@ def detect(
 
     labels = [label if label.endswith(".") else label+"." for label in labels]
 
-    results = object_detector(image, candidate_labels=labels, threshold=threshold)
+    with torch.no_grad():
+        with torch.cuda.amp.autocast():
+            results = object_detector(image, candidate_labels=labels, threshold=threshold)
     results = [DetectionResult.from_dict(result) for result in results]
 
     return results
@@ -275,12 +295,13 @@ def segment(
 
     boxes = get_boxes(detection_results)
     inputs = processor(images=image, input_boxes=boxes, return_tensors="pt").to(f'cuda:{rank}')
-
-    outputs = segmentator(**inputs)
+    inputs = {k: v.half().to(f'cuda:{rank}') for k, v in inputs.items()}
+    with torch.no_grad():
+        outputs = segmentator(**inputs)
     masks = processor.post_process_masks(
         masks=outputs.pred_masks,
-        original_sizes=inputs.original_sizes,
-        reshaped_input_sizes=inputs.reshaped_input_sizes
+        original_sizes=inputs['original_sizes'].int(),
+        reshaped_input_sizes=inputs['reshaped_input_sizes'].int(),
     )[0]
 
     masks = refine_masks(masks, polygon_refinement)
@@ -288,6 +309,7 @@ def segment(
     for detection_result, mask in zip(detection_results, masks):
         detection_result.mask = mask
 
+    del outputs, masks, inputs
     return detection_results
 
 # generate_grounded_segmentation(sample_explanations, threshold=config['grounding']['threshold'],object_detector=object_detector, segmentator=segmentator, processor=processor, rank=rank)
@@ -300,7 +322,7 @@ def generate_grounded_segmentation(
         processor,
         rank) -> Tuple[np.ndarray, List[DetectionResult]]:
     
-    for key in sample_explanations.keys():
+    for key in tqdm(sample_explanations.keys(), desc=f"Generating Grounding Scores on GPU {rank}", total=len(sample_explanations)):
         try:
             if not key.startswith("response"):
                 continue
@@ -312,15 +334,32 @@ def generate_grounded_segmentation(
             labels = [reponse_jsonified.get('explanation')]
             if isinstance(image, str):
                 image = load_image(image)
+            try:
+                detections = detect(image, labels, threshold, object_detector)
+            except Exception as e:
+                print('-'*50)
+                print(f"Detection error for response {key}: {e}")
+                sample_explanations[key]['error_detection'] = f"Detection error: {e}"
+                continue
+            try:
+                detections = segment(image, detections, True,
+                                    segmentator, processor, rank)
+                sample_explanations[key]['detections'] = detections
+                sample_explanations[key]['image'] = np.array(image)
+                sample_explanations[key]['grounding_score'] = detections[0].score
+            except Exception as e:
+                print('-'*50)
+                print(f"Segmentation error for response {key}: {e}")
+                sample_explanations[key]['error_segmentation'] = f"Segmentation error: {e}"
+                continue
 
-            detections = detect(image, labels, threshold, 
-                                object_detector)
-            detections = segment(image, detections, True,
-                                 segmentator, processor, rank)
-            sample_explanations[key]['detections'] = detections
-            sample_explanations[key]['image'] = np.array(image)
-            sample_explanations[key]['grounding_score'] = detections[0].score
+            
+            # Clear GPU cache to free memory
+            del detections
+            torch.cuda.empty_cache()
         except Exception as e:
+            print('-'*50)
+            print(f"Grounding error for response {key}: {e}")
             sample_explanations[key]['error_grounding'] = f"Grounding error: {e}"
 
     return sample_explanations
@@ -335,7 +374,8 @@ if __name__ == "__main__":
             'temperature': 0.5,
             'top_p': 0.95,
             'num_beams': 5,
-            'max_new_tokens': 100
+            'max_new_tokens': 100,
+            'no_of_responses_sampled_per_image': 5
         },
         'grounding': {
             'detector_id': 'IDEA-Research/grounding-dino-tiny',
@@ -344,27 +384,47 @@ if __name__ == "__main__":
         'segmenter_id': 'facebook/sam-vit-base'
     }
     
+    log_memory_usage(0)
+    print('Loading MM model')
+    
     model = LlavaForConditionalGeneration.from_pretrained(config['mm_model']['model_path'])
     processor = AutoProcessor.from_pretrained(config['mm_model']['model_path'])
-    dataloader = get_dataloader('/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA', 'json')
+    dataloader = get_dataloader('/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA', 'json', 0, 1)
     
+    print('Loading data')
+    log_memory_usage(0)
     sample = next(iter(dataloader))
     rank = 0
     
     # check explanation generation for a single sample from the MM model
     sample_explanations = generate_explanations_MM(model, processor, sample, rank, config['mm_model'])
     print('Explanation generation unit test successful')
+    log_memory_usage(0)
+    print('Genrated explanations for a single sample')
     
+    del model, processor
+    torch.cuda.empty_cache()
+    
+    log_memory_usage(0)
+    print('Cleared memory')
+    
+    rank = 1
     # load models for grounding and segmentation
     object_detector = pipeline(model=config['grounding']['detector_id'], task="zero-shot-object-detection", device=f'cuda:{rank}')
-    segmentator = AutoModelForMaskGeneration.from_pretrained(config['segmenter_id']).to(device=f'cuda:{rank}')
+    object_detector.model = object_detector.model.half().to(device=f'cuda:{rank}')
+    segmentator = AutoModelForMaskGeneration.from_pretrained(config['segmenter_id']).half().to(device=f'cuda:{rank}')
     processor = AutoProcessor.from_pretrained(config['segmenter_id'])
+    
+    log_memory_usage(0)
+    print('Loaded models for grounding and segmentation')
     
     # check grounding for a single sample
     samples_with_grounding = generate_grounded_segmentation(
         sample_explanations,
         threshold=config['grounding']['threshold'],object_detector=object_detector, segmentator=segmentator, processor=processor, rank=rank)
     
+    log_memory_usage(0)
+    print('Generated grounding for a single sample')
     print('Grounding unit test successful')    
     
     

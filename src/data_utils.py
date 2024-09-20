@@ -4,8 +4,9 @@ from torch.utils.data import DataLoader
 import os
 from PIL import Image
 import pickle
+from torch.utils.data.distributed import DistributedSampler
 
-def get_dataloader(data_path, dataset_type):
+def get_dataloader(data_path, dataset_type, rank, world_size):
     """
     Load data based on dataset type (json/pandas)
     """
@@ -13,7 +14,10 @@ def get_dataloader(data_path, dataset_type):
         raise NotImplementedError("Dataloader for dataframe not implemented yet.")
     elif dataset_type.lower() == 'json': 
         dataset = GQADataset(data_path)
-        return DataLoader(dataset, batch_size=1, collate_fn=collate_fn)
+        # Create a distributed sampler to split the dataset across GPUs
+        sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank, shuffle=False)
+
+        return DataLoader(dataset, batch_size=1, collate_fn=collate_fn, sampler=sampler)
 
     else:
         raise ValueError(f"Invalid dataset type: {dataset_type}")
@@ -39,7 +43,7 @@ class GQADataset:
         self.answer = self.question_data[question_id]['answer']
         self.full_answer = self.question_data[question_id]['fullAnswer']
         self.image_id = self.question_data[question_id]['imageId']
-        self.image = Image.open(self.image_data_root + '/' + f'{self.image_id}.jpg')
+        # self.image = Image.open(self.image_data_root + '/' + f'{self.image_id}.jpg')
         return {
             'question_id': question_id,
             'question': self.question,
@@ -48,7 +52,7 @@ class GQADataset:
             'full_answer': self.full_answer,
             'image_id': self.image_id,
             'image_path': self.image_data_root + '/' + f'{self.image_id}.jpg',
-            'image': self.image
+            # 'image': self.image
         }
     
     def promptify(self, question):
@@ -70,7 +74,7 @@ def collate_fn(batch):
     full_answers = []
     image_ids = []
     image_paths = []
-    images = []
+    # images = []
     for sample in batch:
         question_ids.append(sample['question_id'])
         questions.append(sample['question'])
@@ -79,7 +83,7 @@ def collate_fn(batch):
         full_answers.append(sample['full_answer'])
         image_ids.append(sample['image_id'])
         image_paths.append(sample['image_path'])
-        images.append(sample['image'])
+        # images.append(sample['image'])
     
     return {
         'question_ids': question_ids,
@@ -89,7 +93,7 @@ def collate_fn(batch):
         'full_answers': full_answers,
         'image_ids': image_ids,
         'image_paths': image_paths,
-        'images': images
+        # 'images': images
     }
     
 
