@@ -30,8 +30,5 @@ uncertainty:
   get_uncertainty: true
 
 logging:
-  uncertainty_path: "runs/llava_gqa_llama3_sg_grounding"
-  responses_path: "runs/llava_gqa_temp1"
-  log_file: "llava_mmt.log"
   explanation_dir: "runs/llava_gqa_yes_gsam_grounding_random_100/explanations"
   grounding_dir: "runs/llava_gqa_yes_gsam_grounding_random_100/grounding"
