@@ -1,64 +1,98 @@
 import json
 import numpy as np
 import matplotlib.pyplot as plt
+import pickle
 
-# Load results from JSON file
-# with open('results.json', 'r') as f:
-#     results = json.load(f)
+# Function to apply min-max scaling to a list of values
+def min_max_scale(values):
+    min_val = min(values)
+    max_val = max(values)
+    # Avoid division by zero
+    if max_val - min_val == 0:
+        return [1 for _ in values]  # If all values are the same, set them to 1
+    return [(v - min_val) / (max_val - min_val) for v in values]
 
-# with open('/home/ubuntu/Multimodal-Uncertainty-Quantification/results_with_selected_tokens.json', 'r') as f:
-#     results = json.load(f)
+path = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding/uncertainty/uncertainty.pkl'
+with open(path, 'rb') as f:
+    results = pickle.load(f)
+    
+filtered_results = {key: value for key, value in results.items() 
+                    if 'uncertainty_from_entropy' in value and 'uncertainty_from_grounding' in value and 'accuracy' in value}
 
-with open('/home/ubuntu/Multimodal-Uncertainty-Quantification/results_with_selected_tokens_new.json', 'r') as f:
-    results = json.load(f)
+# Extract the individual values for each metric
+entropy_values = [value["uncertainty_from_entropy"] for value in filtered_results.values()]
+grounding_values = [value["uncertainty_from_grounding"] for value in filtered_results.values()]
+accuracy_values = [value["accuracy"] for value in filtered_results.values()]
 
-# Step 1: Calculate confidence
-# confidences = []
-entropies = []
-accuracies = []
+scaled_entropy = min_max_scale(entropy_values)
+scaled_grounding = min_max_scale(grounding_values)
+scaled_accuracy = min_max_scale(accuracy_values)
 
-for data in results.values():
-    entropy = data['entropy']
-    accuracy = data['accuracy']
-    # confidence = 1 - entropy
-    entropies.append(entropy)
-    # confidences.append(confidence)
-    accuracies.append(accuracy)
+# Create a new dictionary with the scaled values
+scaled_results = {}
+for i, key in enumerate(filtered_results.keys()):
+    scaled_results[key] = {
+        "entropy": scaled_entropy[i],
+        "grounding": scaled_grounding[i],
+        'confidence_from_entropy': 1 - scaled_entropy[i],
+        'confidence_from_grounding': 1 - scaled_grounding[i],
+        'confidence_from_entropy_grounding': 0.5 * (1 - scaled_entropy[i]) + 0.5*(1 - scaled_grounding[i]),
+        "accuracy": accuracy_values[i]
+    }
+    
+# Function to plot the reliability diagram for a given confidence type
+def plot_reliability_diagram(confidences, accuracies, confidence_type, save_path):
+    bins = np.linspace(0, 1, 11)  # Create 10 bins between 0 and 1
+    bin_indices = np.digitize(confidences, bins) - 1  # Get bin indices for each confidence value
 
-# Step 2: Bin confidence values
-# confidences = np.array(confidences)
-entropies = np.array(entropies)
-entropies = (entropies - np.min(entropies))/(np.max(entropies) - np.min(entropies))
-confidences = 1 - entropies
-accuracies = np.array(accuracies)
+    # Calculate average accuracy for each bin
+    avg_accuracies = []
+    for i in range(len(bins) - 1):
+        bin_mask = bin_indices == i
+        if bin_mask.any():
+            avg_accuracy = np.mean(accuracies[bin_mask])
+            avg_accuracies.append(avg_accuracy)
+        else:
+            avg_accuracies.append(np.nan)  # If no data in bin, append NaN
 
-bins = np.linspace(0, 1, 11)  # Create 10 bins between 0 and 1
-bin_indices = np.digitize(confidences, bins) - 1  # Get bin indices for each confidence value
+    # Handle NaN values (e.g., for empty bins)
+    avg_accuracies = np.array(avg_accuracies)
+    valid_bins = ~np.isnan(avg_accuracies)
 
-# Calculate average accuracy for each bin
-avg_accuracies = []
-for i in range(len(bins) - 1):
-    bin_mask = bin_indices == i
-    if bin_mask.any():
-        avg_accuracy = np.mean(accuracies[bin_mask])
-        avg_accuracies.append(avg_accuracy)
-    else:
-        avg_accuracies.append(np.nan)  # If no data in bin, append NaN
+    # Get bin centers for plotting
+    bin_centers = (bins[:-1] + bins[1:]) / 2
 
-# Step 3: Plot the results
-bin_centers = (bins[:-1] + bins[1:]) / 2  # Get bin centers for plotting
+    # Plot the reliability diagram
+    plt.plot(bin_centers[valid_bins], avg_accuracies[valid_bins], marker='o', label=f'Reliability ({confidence_type})')
+    plt.plot([0, 1], [0, 1], linestyle='--', color='gray', label='Perfect Calibration')  # Diagonal line for perfect reliability
+    plt.xlabel('Confidence')
+    plt.ylabel('Accuracy')
+    plt.title(f'Reliability Diagram ({confidence_type})')
+    plt.legend()
+    plt.grid(True)
 
-plt.figure(figsize=(8, 6))
-plt.plot(bin_centers, avg_accuracies, marker='o')
-plt.xlabel('Confidence')
-plt.ylabel('Average Accuracy')
-plt.title('Average Accuracy vs. Confidence')
-plt.grid(True)
-plt.xlim(0, 1)  # Ensure x-axis goes from 0 to 1
+    # Save the plot
+    plt.savefig(save_path)
+    plt.clf()  # Clear the current plot for the next one
 
-# Save the plot
-# plt.savefig('average_accuracy_vs_confidence.png')
-plt.savefig('average_accuracy_vs_confidence_results_with_selected_tokens_new.png')
+# Extract accuracy values from the dictionary
+accuracies = np.array([v["accuracy"] for v in scaled_results.values()])
 
-# Optionally, display the plot
-plt.show()
+# Extract the three types of confidences
+confidence_from_entropy = np.array([v["confidence_from_entropy"] for v in scaled_results.values()])
+confidence_from_grounding = np.array([v["confidence_from_grounding"] for v in scaled_results.values()])
+confidence_from_entropy_grounding = np.array([v["confidence_from_entropy_grounding"] for v in scaled_results.values()])
+
+# Define file names to save the plots
+files_to_save = {
+    "Confidence from Entropy": "reliability_confidence_from_entropy.png",
+    "Confidence from Grounding": "reliability_confidence_from_grounding.png",
+    "Confidence from Entropy + Grounding": "reliability_confidence_from_entropy_grounding.png"
+}
+
+# Plot and save the three reliability diagrams
+plot_reliability_diagram(confidence_from_entropy, accuracies, "Confidence from Entropy", files_to_save["Confidence from Entropy"])
+plot_reliability_diagram(confidence_from_grounding, accuracies, "Confidence from Grounding", files_to_save["Confidence from Grounding"])
+plot_reliability_diagram(confidence_from_entropy_grounding, accuracies, "Confidence from Entropy + Grounding", files_to_save["Confidence from Entropy + Grounding"])
+
+print(f"Reliability diagrams saved as {', '.join(files_to_save.values())}")

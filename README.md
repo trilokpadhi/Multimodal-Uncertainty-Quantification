@@ -63,8 +63,21 @@ pip install transformers==4.33.0
 ps aux | grep "python -c" | grep -v grep | awk '{print $2}' | xargs -r kill -9
 ps aux | grep "/opt/conda/envs/llava/bin/python" | grep -v grep | awk '{print $2}' | xargs -r kill -9
 ```
+```bash
+sudo lsof -i :29502 # check the process running on port 29502, below command will kill all
+for pid in $(ps -ef | grep 'main_distributed.py' | grep -v grep | awk '{print $2}'); do
+    sudo kill -9 $pid
+done
+```
 - To run on specific GPUs:
 ```bash
 CUDA_VISIBLE_DEVICES=1,2,3,4,5 nohup python -m src.main --config-file configs/llava_gqa.yaml > llava_gqa.out 2>&1 &
 ```
-
+- Run with nohup 
+```bash
+nohup python src/main_distributed.py --config /home/ubuntu/Multimodal-Uncertainty-Quantification/configs/llava_gqa_random_100.yaml > output_random_100.log 2>&1 &
+```
+- To check the log of the process, This will show you the last few lines of the log and update as new output is appended.
+```bash
+tail -f output_random_100.log
+```

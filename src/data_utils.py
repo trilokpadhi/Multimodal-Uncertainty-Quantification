@@ -6,14 +6,15 @@ from PIL import Image
 import pickle
 from torch.utils.data.distributed import DistributedSampler
 
-def get_dataloader(data_path, dataset_type, rank, world_size):
+def get_dataloader(config, rank, world_size):
     """
     Load data based on dataset type (json/pandas)
     """
+    dataset_type = config['dataset_type']
     if dataset_type.lower() == 'dataframe':
         raise NotImplementedError("Dataloader for dataframe not implemented yet.")
     elif dataset_type.lower() == 'json': 
-        dataset = GQADataset(data_path)
+        dataset = GQADataset(config)
         # Create a distributed sampler to split the dataset across GPUs
         sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank, shuffle=False)
 
@@ -23,14 +24,12 @@ def get_dataloader(data_path, dataset_type, rank, world_size):
         raise ValueError(f"Invalid dataset type: {dataset_type}")
     
 class GQADataset:
-    def __init__(self, root):
-        self.root = root
-        self.image_data_root = os.path.join(self.root, 'images')
-        self.scene_graphs_data_root = os.path.join(self.root, 'sceneGraphs', 'train_sceneGraphs.json')
-        self.questions_data_root = os.path.join(self.root, 'questions1.2/train_all_questions/train_all_questions_0_true_filtered_100.json')
+    def __init__(self, config):
+        self.root = config['root_dir']
+        self.image_data_root = os.path.join(self.root, config['image_dir'])
+        self.questions_data_root = os.path.join(self.root, config['question_file'])
         self.question_data = json.load(open(self.questions_data_root, 'r'))
         print(f"Number of questions: {len(self.question_data)}")
-        self.scene_graphs_data = json.load(open(self.scene_graphs_data_root, 'r'))
         self.question_ids = list(self.question_data.keys())
 
     def __len__(self):
@@ -99,9 +98,11 @@ def collate_fn(batch):
 
 
 if __name__ == "__main__":
-    root = '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/'
+    # root = '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/'
+    # config = {'dataset_type': 'json', 'root_dir': '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/', 'image_dir': 'images', 'question_file': 'questions1.2/train_all_questions/train_all_questions_0_random_filtered_100.json'}
+    config = {'dataset_type': 'json', 'root_dir': '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/', 'image_dir': 'images', 'question_file': 'questions1.2/train_all_questions/train_all_questions_0_true_filtered_100.json'}
     dataset_type = 'json'
-    dataloader = get_dataloader(root, dataset_type)
+    dataloader = get_dataloader(config, 0, 1)
     for idx, sample in enumerate(dataloader):
         print(f"Sample {idx}: {sample}")
         if idx >= 5:

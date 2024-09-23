@@ -14,6 +14,7 @@ from inference_utils import generate_explanations_MM, generate_grounded_segmenta
 from transformers import pipeline, AutoProcessor, LlavaForConditionalGeneration, AutoModelForMaskGeneration
 import pickle
 from tqdm import tqdm
+import argparse
 
 # Logging setup
 logging.basicConfig(filename='inference_log.log', level=logging.INFO)
@@ -34,7 +35,7 @@ def inference_pipeline(rank, world_size, config):
     setup(rank, world_size)
 
     # Load data based on dataset type (json/pandas)
-    dataloader = get_dataloader(config['data']['data_path'], config['data']['dataset_type'], rank, world_size)
+    dataloader = get_dataloader(config['data'], rank, world_size)
     
     # Load models
     # model_llava, processor_llava = load_model_llava(config['mm_model']['model_path'], rank)
@@ -87,9 +88,10 @@ def inference_pipeline(rank, world_size, config):
     cleanup()
 
 # Main function
-def main():
+def main(args):
     # Load YAML config
-    with open("/home/ubuntu/Multimodal-Uncertainty-Quantification/configs/llava_gqa2.yaml", "r") as file:
+    config_path = args.config 
+    with open(config_path, "r") as file:
         config = yaml.safe_load(file)
 
     # Set world size to 1 for single GPU debugging
@@ -104,4 +106,7 @@ def main():
         mp.spawn(inference_pipeline, args=(world_size, config), nprocs=world_size, join=True)
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config', type=str, default='config.yaml', help='Path to the config file')
+    args = parser.parse_args()
+    main(args)

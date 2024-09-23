@@ -18,7 +18,7 @@
             "name": "llava environment debugger",
             "type": "debugpy",
             "request": "launch",
-            "program": "/home/ubuntu/Multimodal-Uncertainty-Quantification/playground/llava_logprobs.py",
+            "program": "${file}",
             "console": "integratedTerminal",
             "python": "/opt/conda/envs/llava/bin/python"
         },
