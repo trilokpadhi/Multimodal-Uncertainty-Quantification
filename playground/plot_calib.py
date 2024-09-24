@@ -3,6 +3,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle
 
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+
 # Function to apply min-max scaling to a list of values
 def min_max_scale(values):
     min_val = min(values)
@@ -12,7 +16,7 @@ def min_max_scale(values):
         return [1 for _ in values]  # If all values are the same, set them to 1
     return [(v - min_val) / (max_val - min_val) for v in values]
 
-path = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding/uncertainty/uncertainty.pkl'
+path = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/uncertainty/uncertainty_random_100.pkl'
 with open(path, 'rb') as f:
     results = pickle.load(f)
     
@@ -28,6 +32,37 @@ scaled_entropy = min_max_scale(entropy_values)
 scaled_grounding = min_max_scale(grounding_values)
 scaled_accuracy = min_max_scale(accuracy_values)
 
+# Step 1: Compute confidence values for the whole dataset
+confidence_from_entropy = 1 - np.array(scaled_entropy)
+confidence_from_grounding = 1 - np.array(scaled_grounding)
+
+# Step 2: Calculate the feature (difference between confidence_from_entropy and confidence_from_grounding)
+# X = (confidence_from_entropy - confidence_from_grounding).reshape(-1, 1)  # Feature for regression
+X = np.column_stack((confidence_from_entropy, confidence_from_grounding))
+
+y = np.array(accuracy_values)  # Ground truth accuracy values
+
+# Step 3: Select 20% of the dataset for regression
+n_samples = len(X)
+n_val = int(0.25 * n_samples)  # 20% of the total samples
+X_val = X[:n_val]  # Use first 20% of the data
+y_val = y[:n_val]  # Corresponding accuracy values for the first 20%
+
+# Step 4: Fit linear regression on the selected 20% of data to find the optimal alpha
+model = LinearRegression()
+model.fit(X_val, y_val)  # Only use the 20% subset
+
+# Extract the learned alpha
+# alpha = model.coef_[0]
+# print(f"Optimal alpha found via regression: {alpha}")
+alpha_entropy, alpha_grounding = model.coef_
+
+print(f"Optimal alpha for confidence_from_entropy: {alpha_entropy}")
+print(f"Optimal alpha for confidence_from_grounding: {alpha_grounding}")
+
+new_confidence_values = alpha_entropy * (1 - np.array(scaled_entropy)) + alpha_grounding*(1 - np.array(scaled_grounding))
+scaled_new_confidence_values = min_max_scale(accuracy_values)
+
 # Create a new dictionary with the scaled values
 scaled_results = {}
 for i, key in enumerate(filtered_results.keys()):
@@ -36,7 +71,8 @@ for i, key in enumerate(filtered_results.keys()):
         "grounding": scaled_grounding[i],
         'confidence_from_entropy': 1 - scaled_entropy[i],
         'confidence_from_grounding': 1 - scaled_grounding[i],
-        'confidence_from_entropy_grounding': 0.5 * (1 - scaled_entropy[i]) + 0.5*(1 - scaled_grounding[i]),
+        # 'confidence_from_entropy_grounding': alpha_entropy * (1 - scaled_entropy[i]) + alpha_grounding*(1 - scaled_grounding[i]),
+        'confidence_from_entropy_grounding': scaled_new_confidence_values[i],
         "accuracy": accuracy_values[i]
     }
     
@@ -85,9 +121,9 @@ confidence_from_entropy_grounding = np.array([v["confidence_from_entropy_groundi
 
 # Define file names to save the plots
 files_to_save = {
-    "Confidence from Entropy": "reliability_confidence_from_entropy.png",
-    "Confidence from Grounding": "reliability_confidence_from_grounding.png",
-    "Confidence from Entropy + Grounding": "reliability_confidence_from_entropy_grounding.png"
+    "Confidence from Entropy": "reliability_confidence_from_entropy_random_100_calib.png",
+    "Confidence from Grounding": "reliability_confidence_from_grounding_random_100_calib.png",
+    "Confidence from Entropy + Grounding": "reliability_confidence_from_entropy_grounding_random_100_calib.png"
 }
 
 # Plot and save the three reliability diagrams
