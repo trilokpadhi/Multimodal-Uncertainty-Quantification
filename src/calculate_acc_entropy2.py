@@ -68,9 +68,9 @@ def check_entailment(textA, textB):
         return False
 
 # Load the files 
-explanation_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding/explanations'
-grounding_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding/grounding'
-uncertainty_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding/uncertainty'
+explanation_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/explanations'
+grounding_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/grounding'
+uncertainty_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/uncertainty'
 
 # check if the directories exist
 if not os.path.exists(explanation_dir):
@@ -156,8 +156,28 @@ for file in tqdm(grounding_files, desc = 'Calculating accuracy from groundings',
         accuracy = entailed_responses / len(entailment)
         uncertainty_from_grounding_entropy[question_id]['accuracy'] = accuracy
         
+# # get model uncertainty from groundings
+# for file in tqdm(grounding_files, desc = 'Calculating model uncertainty from groundings', total = len(grounding_files)):
+#     with open(grounding_dir + '/' + file, 'rb') as f:
+#         grounding_meta_data = pickle.load(f)
+#         question_id = file.split('_')[-1].replace('.pkl', '')
+        
+#         model_uncertainty = []
+#         for key in grounding_meta_data.keys():
+#             if 'response' in key:
+#                 response_meta_data = grounding_meta_data[key]
+#                 try:
+#                     model_uncertainty.append(response_meta_data['model_uncertainty'])
+#                 except:
+#                     continue
+#             else:
+#                 continue
+#         model_uncertainty_ = sum(model_uncertainty) / len(model_uncertainty)
+#         uncertainty_from_grounding_entropy[question_id]['model_uncertainty'] = model_uncertainty_
+        
+
 # save the uncertainty
-with open(uncertainty_dir + '/uncertainty.pkl', 'wb') as f:
+with open(uncertainty_dir + '/uncertainty_random_100.pkl', 'wb') as f:
     pickle.dump(uncertainty_from_grounding_entropy, f)
         
             
