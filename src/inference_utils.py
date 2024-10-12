@@ -48,7 +48,14 @@ def extract_json_from_text(text):
     
     return json.loads(json_string)
 
-def generate_explanations_MM(model, processor, sample, rank, params):
+def save_results(results, directory, filename):
+    os.makedirs(directory, exist_ok=True)
+    file_path = os.path.join(directory, filename)
+    with open(file_path, 'wb') as f:
+        pickle.dump(results, f)
+    print(f'Results saved to {file_path}')
+    
+def generate_explanations_MM(model, processor, sample, rank, params, config_logging):
     # Assign the model and inputs to the correct device based on rank
     torch_device = f'cuda:{rank}' if torch.cuda.is_available() else 'cpu'
     model = model.half().to(torch_device)  # Move model to half precision and to correct GPU
@@ -77,20 +84,28 @@ def generate_explanations_MM(model, processor, sample, rank, params):
         generated_token_ids = outputs.sequences[:, inputs['input_ids'].shape[-1]:] 
         decoded_outputs = processor.decode(generated_token_ids.flatten(), skip_special_tokens=True)
         
+        # Compute transition probabilities
+        transition_scores = model.compute_transition_scores(outputs.sequences, outputs.scores, normalize_logits=True)
         # Store results in sample dict
         sample[f'response_{i}'] = {}
         sample[f'response_{i}']['prompt'] = prompt
-        sample[f'response_{i}']['outputs'] = outputs
-        sample[f'response_{i}']['generated_token_ids'] = generated_token_ids
+        # sample[f'response_{i}']['outputs'] = outputs
+        sample[f'response_{i}']['transition_scores'] = transition_scores.cpu().numpy()
+        sample[f'response_{i}']['generated_token_ids'] = generated_token_ids.cpu().numpy()
         sample[f'response_{i}']['decoded_outputs'] = decoded_outputs
 
         # Clear GPU memory after each step
         del outputs, generated_token_ids, decoded_outputs
         torch.cuda.empty_cache()
+        
+    # save the sample to a file
+    save_results(sample, config_logging['explanation_dir'], f"explanations_{sample['question_ids'][0]}.pkl")
+    print(f'Explanations generated and saved to file f"explanations_{sample["question_ids"][0]}.pkl"')
+    # return the file name to which the results are saved
+    return f"explanations_{sample['question_ids'][0]}.pkl"
 
-    return sample
 
-
+    
 @dataclass
 class BoundingBox:
     xmin: int
@@ -315,19 +330,26 @@ def segment(
 # generate_grounded_segmentation(sample_explanations, threshold=config['grounding']['threshold'],object_detector=object_detector, segmentator=segmentator, processor=processor, rank=rank)
 
 def generate_grounded_segmentation(
-        sample_explanations,
+        sample_explanations_file_name,
         threshold,
         object_detector, 
         segmentator, 
         processor,
-        rank) -> Tuple[np.ndarray, List[DetectionResult]]:
+        rank, config_logging) -> Tuple[np.ndarray, List[DetectionResult]]:
     
-    for key in tqdm(sample_explanations.keys(), desc=f"Generating Grounding Scores on GPU {rank}", total=len(sample_explanations)):
+    sample_explanations_file_path = os.path.join(config_logging['explanation_dir'], sample_explanations_file_name)
+    sample_explanations = pickle.load(open(sample_explanations_file_path, 'rb'))
+    # for key in tqdm(sample_explanations.keys(), desc=f"Generating Grounding Scores on GPU {rank}", total=len(sample_explanations)):
+    sample_grounding = {}
+    sample_grounding['question_id'] = sample_explanations['question_ids'][0]
+    for key in sample_explanations.keys():
         try:
             if not key.startswith("response"):
                 continue
             else:
+                sample_grounding[key] = {}
                 response = sample_explanations.get(key)['decoded_outputs']
+                sample_grounding[key]['decoded_outputs'] = response
             image = sample_explanations['image_paths'][0]
             reponse_jsonified = extract_json_from_text(
                 response)
@@ -339,18 +361,22 @@ def generate_grounded_segmentation(
             except Exception as e:
                 print('-'*50)
                 print(f"Detection error for response {key}: {e}")
-                sample_explanations[key]['error_detection'] = f"Detection error: {e}"
+                # sample_explanations[key]['error_detection'] = f"Detection error: {e}"
+                sample_grounding[key]['error_detection'] = f"Detection error: {e}"
                 continue
             try:
                 detections = segment(image, detections, True,
                                     segmentator, processor, rank)
-                sample_explanations[key]['detections'] = detections
-                sample_explanations[key]['image'] = np.array(image)
-                sample_explanations[key]['grounding_score'] = detections[0].score
+                # sample_explanations[key]['detections'] = detections
+                sample_grounding[key]['detections'] = detections[0]
+                # sample_explanations[key]['image'] = np.array(image)
+                # sample_explanations[key]['grounding_score'] = detections[0].score
+                sample_grounding[key]['grounding_score'] = detections[0].score
             except Exception as e:
                 print('-'*50)
                 print(f"Segmentation error for response {key}: {e}")
-                sample_explanations[key]['error_segmentation'] = f"Segmentation error: {e}"
+                # sample_explanations[key]['error_segmentation'] = f"Segmentation error: {e}"
+                sample_grounding[key]['error_segmentation'] = f"Segmentation error: {e}"
                 continue
 
             
@@ -362,7 +388,11 @@ def generate_grounded_segmentation(
             print(f"Grounding error for response {key}: {e}")
             sample_explanations[key]['error_grounding'] = f"Grounding error: {e}"
 
-    return sample_explanations
+
+    # save the results to a file
+    # save_results(sample_explanations, config_logging['grounding_dir'], f"grounding_{sample_explanations['question_ids'][0]}.pkl")
+    save_results(sample_grounding, config_logging['grounding_dir'], f"grounding_{sample_grounding['question_id']}.pkl")
+    print(f'Grounding scores generated and saved to file f"grounding_{sample_explanations["question_ids"][0]}.pkl"') 
 
 
 

@@ -11,6 +11,7 @@ def get_dataloader(config, rank, world_size):
     Load data based on dataset type (json/pandas)
     """
     dataset_type = config['dataset_type']
+    print(f"Dataset type: {dataset_type}")
     if dataset_type.lower() == 'dataframe':
         raise NotImplementedError("Dataloader for dataframe not implemented yet.")
     elif dataset_type.lower() == 'json': 
@@ -29,6 +30,8 @@ class GQADataset:
         self.image_data_root = os.path.join(self.root, config['image_dir'])
         self.questions_data_root = os.path.join(self.root, config['question_file'])
         self.question_data = json.load(open(self.questions_data_root, 'r'))
+        # select only 10 questions for testing
+        # self.question_data = {k: self.question_data[k] for k in list(self.question_data.keys())[:20]}
         print(f"Number of questions: {len(self.question_data)}")
         self.question_ids = list(self.question_data.keys())
 
@@ -60,9 +63,6 @@ class GQADataset:
         Give your answer in JSON format where the keys are answer(one word answer), explanation( explain your answer in one short sentence), and your confidence(varies between 0 to 1).
         """
     
-    def write_to_pkl(self, data, file_path):
-        with open(file_path, 'wb') as file:
-            pickle.dump(data, file)
         
 # write a collate function to collate the samples
 def collate_fn(batch):

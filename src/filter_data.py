@@ -19,8 +19,8 @@ def sample_data(data, sample_size):
 
 def main():
     questions_file = '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/questions1.2/train_all_questions/train_all_questions_0.json'
-    sample_size = 100  # Change this value to sample a different number of questions
-    output_file = 'short_dataset.json'
+    sample_size = 10000  # Change this value to sample a different number of questions
+    output_file = '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/questions1.2/train_all_questions/train_all_questions_0_random_filtered_10000.json'
 
     # Load dataset
     dataset = load_json_file(questions_file)
