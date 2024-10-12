@@ -5,7 +5,7 @@ data:
   dataset: "gqa"
   root_dir: "/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/"
   image_dir: "images"
-  question_file: "questions1.2/train_all_questions/train_all_questions_0_random_filtered_100.json"
+  question_file: "questions1.2/train_all_questions/train_all_questions_0_random_filtered_10000.json"
   dataset_type: "json"
 mm_model:
   model_path: "llava-hf/llava-1.5-7b-hf"
@@ -30,5 +30,5 @@ uncertainty:
   get_uncertainty: true
 
 logging:
-  explanation_dir: "runs/llava_gqa_yes_gsam_grounding_random_100/explanations_test"
-  grounding_dir: "runs/llava_gqa_yes_gsam_grounding_random_100/grounding_test"
+  explanation_dir: "runs/llava_gqa_yes_gsam_grounding_random_10000/explanations"
+  grounding_dir: "runs/llava_gqa_yes_gsam_grounding_random_10000/grounding"
