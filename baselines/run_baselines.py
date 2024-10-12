@@ -102,12 +102,12 @@ def get_accuracy(full_answers, questions, responses):
         inputs = deberta_tokenizer.encode_plus(premise, hypthesis, return_tensors='pt', truncation=True)
         with torch.no_grad():
             logits = deberta_model(**inputs).logits
-            pred = torch.argmax(logits, dim=1).item() # 0: contradiction, 1: neutral, 2: entailment
+            pred = torch.argmax(logits, dim=1).item()
             if pred == 2:
                 correct += 1
-        accuracy = correct / len(responses)
+    accuracy = correct / len(responses)
         
-        return accuracy
+    return accuracy
 
 def get_semantic_entropy(question, explanation_with_log_probs):
     """
