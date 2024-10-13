@@ -61,48 +61,52 @@ def generate_explanations_MM(model, processor, sample, rank, params, config_logg
     model = model.half().to(torch_device)  # Move model to half precision and to correct GPU
     prompt = sample['promptified_questions'][0]
     raw_image = Image.open(sample['image_paths'][0])
-    
+    question_id = sample['question_ids'][0]
     # Process inputs with half precision
     inputs = processor(images=raw_image, text=prompt, return_tensors="pt").to(torch_device, torch.float16)
-    
-    # for i in range(20):
-    for i in range(params['no_of_responses_sampled_per_image']):
-        outputs = model.generate(
-            input_ids=inputs['input_ids'],        # Text tokens
-            pixel_values=inputs['pixel_values'],  # Image tokens
-            do_sample=True,                      # Enable sampling
-            temperature=params['temperature'],    # Sampling temperature
-            top_p=params['top_p'],                # Top-p sampling
-            num_beams=params['num_beams'],        # Beam search
-            max_new_tokens=params['max_new_tokens'],
-            use_cache=False,
-            return_dict_in_generate=True,
-            output_scores=True
-        )
-        
-        # Process the generated output, remove the input token ids 
-        generated_token_ids = outputs.sequences[:, inputs['input_ids'].shape[-1]:] 
-        decoded_outputs = processor.decode(generated_token_ids.flatten(), skip_special_tokens=True)
-        
-        # Compute transition probabilities
-        transition_scores = model.compute_transition_scores(outputs.sequences, outputs.scores, normalize_logits=True)
-        # Store results in sample dict
-        sample[f'response_{i}'] = {}
-        sample[f'response_{i}']['prompt'] = prompt
-        # sample[f'response_{i}']['outputs'] = outputs
-        sample[f'response_{i}']['transition_scores'] = transition_scores.cpu().numpy()
-        sample[f'response_{i}']['generated_token_ids'] = generated_token_ids.cpu().numpy()
-        sample[f'response_{i}']['decoded_outputs'] = decoded_outputs
+    if os.path.exists(os.path.join(config_logging['explanation_dir'], f"explanations_{question_id}.pkl")):
+        print(f"Explanations for question {question_id} already exist at explanations_{question_id}.pkl.... Skipping...")
+        return f"explanations_{question_id}.pkl"
+    else:
+        print(f"Generating explanations for question {question_id}")
+        # for i in range(20):
+        for i in range(params['no_of_responses_sampled_per_image']):
+            outputs = model.generate(
+                input_ids=inputs['input_ids'],        # Text tokens
+                pixel_values=inputs['pixel_values'],  # Image tokens
+                do_sample=True,                      # Enable sampling
+                temperature=params['temperature'],    # Sampling temperature
+                top_p=params['top_p'],                # Top-p sampling
+                num_beams=params['num_beams'],        # Beam search
+                max_new_tokens=params['max_new_tokens'],
+                use_cache=False,
+                return_dict_in_generate=True,
+                output_scores=True
+            )
+            
+            # Process the generated output, remove the input token ids 
+            generated_token_ids = outputs.sequences[:, inputs['input_ids'].shape[-1]:] 
+            decoded_outputs = processor.decode(generated_token_ids.flatten(), skip_special_tokens=True)
+            
+            # Compute transition probabilities
+            transition_scores = model.compute_transition_scores(outputs.sequences, outputs.scores, normalize_logits=True)
+            # Store results in sample dict
+            sample[f'response_{i}'] = {}
+            sample[f'response_{i}']['prompt'] = prompt
+            # sample[f'response_{i}']['outputs'] = outputs
+            sample[f'response_{i}']['transition_scores'] = transition_scores.cpu().numpy()
+            sample[f'response_{i}']['generated_token_ids'] = generated_token_ids.cpu().numpy()
+            sample[f'response_{i}']['decoded_outputs'] = decoded_outputs
 
-        # Clear GPU memory after each step
-        del outputs, generated_token_ids, decoded_outputs
-        torch.cuda.empty_cache()
-        
-    # save the sample to a file
-    save_results(sample, config_logging['explanation_dir'], f"explanations_{sample['question_ids'][0]}.pkl")
-    print(f'Explanations generated and saved to file f"explanations_{sample["question_ids"][0]}.pkl"')
-    # return the file name to which the results are saved
-    return f"explanations_{sample['question_ids'][0]}.pkl"
+            # Clear GPU memory after each step
+            del outputs, generated_token_ids, decoded_outputs
+            torch.cuda.empty_cache()
+            
+        # save the sample to a file
+        save_results(sample, config_logging['explanation_dir'], f"explanations_{question_id}.pkl")
+        print(f'Explanations generated and saved to file f"explanations_{question_id}.pkl"')
+        # return the file name to which the results are saved
+        return f"explanations_{question_id}.pkl"
 
 
     
@@ -339,60 +343,68 @@ def generate_grounded_segmentation(
     
     sample_explanations_file_path = os.path.join(config_logging['explanation_dir'], sample_explanations_file_name)
     sample_explanations = pickle.load(open(sample_explanations_file_path, 'rb'))
-    # for key in tqdm(sample_explanations.keys(), desc=f"Generating Grounding Scores on GPU {rank}", total=len(sample_explanations)):
-    sample_grounding = {}
-    sample_grounding['question_id'] = sample_explanations['question_ids'][0]
-    for key in sample_explanations.keys():
-        try:
-            if not key.startswith("response"):
-                continue
-            else:
-                sample_grounding[key] = {}
-                response = sample_explanations.get(key)['decoded_outputs']
-                sample_grounding[key]['decoded_outputs'] = response
-            image = sample_explanations['image_paths'][0]
-            reponse_jsonified = extract_json_from_text(
-                response)
-            labels = [reponse_jsonified.get('explanation')]
-            if isinstance(image, str):
-                image = load_image(image)
+    question_id = sample_explanations['question_ids'][0]
+    sample_grounding_file_path = os.path.join(config_logging['grounding_dir'], f"grounding_{question_id}.pkl")
+    # check if the grounding file already exists
+    if os.path.exists(sample_grounding_file_path):
+        print(f"Grounding scores for question {question_id} already exist at {sample_grounding_file_path}. Skipping...")
+        return
+    else:
+        print(f"Generating grounding scores for question {question_id}")
+        # for key in tqdm(sample_explanations.keys(), desc=f"Generating Grounding Scores on GPU {rank}", total=len(sample_explanations)):
+        sample_grounding = {}
+        sample_grounding['question_id'] = question_id
+        for key in sample_explanations.keys():
             try:
-                detections = detect(image, labels, threshold, object_detector)
+                if not key.startswith("response"):
+                    continue
+                else:
+                    sample_grounding[key] = {}
+                    response = sample_explanations.get(key)['decoded_outputs']
+                    sample_grounding[key]['decoded_outputs'] = response
+                image = sample_explanations['image_paths'][0]
+                reponse_jsonified = extract_json_from_text(
+                    response)
+                labels = [reponse_jsonified.get('explanation')]
+                if isinstance(image, str):
+                    image = load_image(image)
+                try:
+                    detections = detect(image, labels, threshold, object_detector)
+                except Exception as e:
+                    print('-'*50)
+                    print(f"Detection error for response {key}: {e}")
+                    # sample_explanations[key]['error_detection'] = f"Detection error: {e}"
+                    sample_grounding[key]['error_detection'] = f"Detection error: {e}"
+                    continue
+                try:
+                    detections = segment(image, detections, True,
+                                        segmentator, processor, rank)
+                    # sample_explanations[key]['detections'] = detections
+                    sample_grounding[key]['detections'] = detections[0]
+                    # sample_explanations[key]['image'] = np.array(image)
+                    # sample_explanations[key]['grounding_score'] = detections[0].score
+                    sample_grounding[key]['grounding_score'] = detections[0].score
+                except Exception as e:
+                    print('-'*50)
+                    print(f"Segmentation error for response {key}: {e}")
+                    # sample_explanations[key]['error_segmentation'] = f"Segmentation error: {e}"
+                    sample_grounding[key]['error_segmentation'] = f"Segmentation error: {e}"
+                    continue
+
+                
+                # Clear GPU cache to free memory
+                del detections
+                torch.cuda.empty_cache()
             except Exception as e:
                 print('-'*50)
-                print(f"Detection error for response {key}: {e}")
-                # sample_explanations[key]['error_detection'] = f"Detection error: {e}"
-                sample_grounding[key]['error_detection'] = f"Detection error: {e}"
-                continue
-            try:
-                detections = segment(image, detections, True,
-                                    segmentator, processor, rank)
-                # sample_explanations[key]['detections'] = detections
-                sample_grounding[key]['detections'] = detections[0]
-                # sample_explanations[key]['image'] = np.array(image)
-                # sample_explanations[key]['grounding_score'] = detections[0].score
-                sample_grounding[key]['grounding_score'] = detections[0].score
-            except Exception as e:
-                print('-'*50)
-                print(f"Segmentation error for response {key}: {e}")
-                # sample_explanations[key]['error_segmentation'] = f"Segmentation error: {e}"
-                sample_grounding[key]['error_segmentation'] = f"Segmentation error: {e}"
-                continue
-
-            
-            # Clear GPU cache to free memory
-            del detections
-            torch.cuda.empty_cache()
-        except Exception as e:
-            print('-'*50)
-            print(f"Grounding error for response {key}: {e}")
-            sample_explanations[key]['error_grounding'] = f"Grounding error: {e}"
+                print(f"Grounding error for response {key}: {e}")
+                sample_explanations[key]['error_grounding'] = f"Grounding error: {e}"
 
 
-    # save the results to a file
-    # save_results(sample_explanations, config_logging['grounding_dir'], f"grounding_{sample_explanations['question_ids'][0]}.pkl")
-    save_results(sample_grounding, config_logging['grounding_dir'], f"grounding_{sample_grounding['question_id']}.pkl")
-    print(f'Grounding scores generated and saved to file f"grounding_{sample_explanations["question_ids"][0]}.pkl"') 
+        # save the results to a file
+        # save_results(sample_explanations, config_logging['grounding_dir'], f"grounding_{sample_explanations['question_ids'][0]}.pkl")
+        save_results(sample_grounding, config_logging['grounding_dir'], f"grounding_{sample_grounding['question_id']}.pkl")
+        print(f'Grounding scores generated and saved to file f"grounding_{sample_explanations["question_ids"][0]}.pkl"') 
 
 
 
