@@ -29,9 +29,12 @@ deberta_tokenizer = AutoTokenizer.from_pretrained(deberta_model_name)
 deberta_model = AutoModelForSequenceClassification.from_pretrained(deberta_model_name)
 
 # Load responses
-explanation_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/explanations'
-grounding_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/grounding'
-uncertainty_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/uncertainty'
+# explanation_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/explanations'
+explanation_dir = '/mnt/myebsvolume/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_10000/explanations'
+# grounding_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/grounding'
+grounding_dir = '/mnt/myebsvolume/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_10000/grounding'
+# uncertainty_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/uncertainty'
+uncertainty_dir = '/home/ec2-user/Multimodal-Uncertainty-Quantification/runs/uncertainty'
 
 # Method A: Log Probability of the sentence from the scores of the model
 def get_log_prob_from_logits(logits, generated_token_ids):
@@ -203,7 +206,7 @@ for file in tqdm(files, desc='Processing files', total=len(files)):
     # lexical_similarity = {}
     # semantic_entropy = {}
     with open(os.path.join(explanation_dir, file), 'rb') as f:
-        question_id = file.split('_')[3].split('.')[0] # since file name is of the format - explanations_0_0_181060668.pkl
+        question_id = file.split('_')[1].split('.')[0] # since file name is of the format - explanations_181060668.pkl
         explanation_metadata = pickle.load(f)
         log_probs = []
         rogue_scores = []
@@ -213,9 +216,11 @@ for file in tqdm(files, desc='Processing files', total=len(files)):
         for key, value in explanation_metadata.items():
             if 'response' in key:
                 metadata = explanation_metadata[key]
-                logits = metadata['outputs'].scores
-                generated_token_ids = metadata['generated_token_ids']
-                log_prob_sentence = get_log_prob_from_logits(logits, generated_token_ids)
+                # logits = metadata['outputs'].scores
+                # logits = metadata['transition_scores']
+                # generated_token_ids = metadata['generated_token_ids']
+                # log_prob_sentence = get_log_prob_from_logits(logits, generated_token_ids)
+                log_prob_sentence = np.sum(metadata['transition_scores'])
                 log_probs.append(log_prob_sentence)
                 
                 ## get explanations from the model response dict to calculate rogue scores
