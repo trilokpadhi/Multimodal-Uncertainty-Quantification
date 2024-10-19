@@ -56,6 +56,12 @@ def load_grounding_scores(root_dir_grounding):
             continue  # Skip non-pickle files
         path = os.path.join(root_dir_grounding, file)
         grounding_score_list = []
+        
+        # Check if the file is empty
+        if os.path.getsize(path) == 0:
+            print(f"Skipping empty file: {file}")
+            continue
+        
         with open(path, 'rb') as f:
             grounding_data = pickle.load(f)
             question_ids = grounding_data.get('question_ids', [])
@@ -636,9 +642,12 @@ def run_pipeline(
 # Example usage
 if __name__ == "__main__":
     # Replace the following paths with your actual file paths
-    uncertainty_filepath = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/uncertainty/uncertainty_scores_baseline.pkl'
-    grounding_root_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/grounding'
-    save_path_prefix = "reliability_diagram_optimized"
+    # uncertainty_filepath = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/uncertainty/uncertainty_scores_baseline.pkl'
+    # grounding_root_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/grounding'
+    
+    uncertainty_filepath = '/home/ec2-user/Multimodal-Uncertainty-Quantification/runs/uncertainty/uncertainty_scores_baseline.pkl'
+    grounding_root_dir = '/mnt/myebsvolume/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_10000/grounding/'
+    save_path_prefix = "reliability_diagram_optimized_7000"
     
     # Define XGBoost hyperparameter ranges for grid search
     param_grid = {
