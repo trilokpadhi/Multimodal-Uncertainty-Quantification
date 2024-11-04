@@ -263,6 +263,11 @@ def run_pipeline(uncertainty_filepath, grounding_root_dir, save_path_prefix, see
         print("No valid data found after filtering. Please check your data file.")
         return
     
+    # 
+    
+    
+    
+    
     # Load grounding scores
     grounding_scores_mapping = load_grounding_scores(grounding_root_dir)
     print(f"Loaded {len(grounding_scores_mapping)} grounding scores.")

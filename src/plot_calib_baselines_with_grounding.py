@@ -282,6 +282,15 @@ def run_pipeline(uncertainty_filepath, grounding_root_dir, save_path_prefix, see
     # accuracies = min_max_scale(accuracies)
     # accuracies are binary and should not be scaled
     
+    # map all the metrics to thee question_ids
+    filtered_question_ids = [qid for qid, g in zip(question_ids, grounding_scores) if g is not None]
+    
+    # results = zip(predictive_entropy_scaled, lexical_similarity_scaled, semantic_entropy_scaled, semantic_clusters_scaled, grounding_scores_scaled, accuracies)
+    
+    results_dict = dict(zip(filtered_question_ids, zip(predictive_entropy_scaled, lexical_similarity_scaled, semantic_entropy_scaled, semantic_clusters_scaled, grounding_scores_scaled, accuracies)))
+    
+    
+    # map all the metrics to thee question_ids, tot 
     # Ensure that all metrics have the same length
     assert len(predictive_entropy_scaled) == len(lexical_similarity_scaled) == len(semantic_entropy_scaled) == len(semantic_clusters_scaled) == len(grounding_scores_scaled) == len(accuracies), \
         "Mismatch in the number of samples among metrics."
@@ -297,6 +306,15 @@ def run_pipeline(uncertainty_filepath, grounding_root_dir, save_path_prefix, see
         val_percent=0.25, 
         seed=seed
     )
+    
+    # get the question_ids for the calibration and test set
+    calibration_question_ids = [qid for qid, g in zip(filtered_question_ids, grounding_scores_scaled) if g in calibration['grounding_score']]
+    test_question_ids = [qid for qid, g in zip(filtered_question_ids, grounding_scores_scaled) if g in test_set['grounding_score']]
+    
+    # map all the metrics to the test and calibration question_ids
+    calibration_results = {qid: results_dict[qid] for qid in calibration_question_ids}
+    test_results = {qid: results_dict[qid] for qid in test_question_ids}
+    
     
     # List of original metrics and their corresponding calibration transformations
     metrics = {
@@ -348,6 +366,9 @@ def run_pipeline(uncertainty_filepath, grounding_root_dir, save_path_prefix, see
         X_test = data['X_test']
         calibrated_conf = calculate_confidence_values(X_test, alphas, poly_features)
         calibrated_test_conf[metric_name] = calibrated_conf
+    
+    # map the calibrated confidences to the question_ids for each metric
+    calibrated_test_results = {qid: [calibrated_test_conf[metric_name][i] for i in range(len(calibrated_test_conf[metric_name]))] for qid in test_question_ids for metric_name in metrics.keys()}
     
     # Uncalibrated confidences
     uncalib_conf = {}

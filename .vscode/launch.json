@@ -20,7 +20,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "python": "/opt/conda/envs/llava/bin/python"
+            "python": "/home/ec2-user/miniconda3/envs/llava/bin/python"
         },
         {
             "name": "python debugger",
