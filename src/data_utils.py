@@ -58,10 +58,23 @@ class GQADataset:
         }
     
     def promptify(self, question):
-        return f"""USER:<image>
-        {question}
-        Give your answer in JSON format where the keys are answer(one word answer), explanation( explain your answer in one short sentence), and your confidence(varies between 0 to 1).
+        # return f"""USER:<image>
+        # {question}
+        # Give your answer in JSON format where the keys are answer(one word answer), explanation( explain your answer in one short sentence), and your confidence(varies between 0 to 1).
+        # """
+        few_shot_examples = """ Question: What is the color of the object?
+        Answer: The color of the object is red.
+        Question: Is the color of the object red?
+        Answer: Yes, the color of the object is red.
+        Question: Do you see clocks in the image?
+        Answer: No, I do not see any clocks in the image.
         """
+        prompt = f"""USER: Answer the questions, Here are few examples: 
+        {few_shot_examples}
+        <image>
+        {question}
+        """
+        return prompt
     
         
 # write a collate function to collate the samples

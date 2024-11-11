@@ -23,6 +23,65 @@ import psutil
 import torch
 import GPUtil
 
+# llama2 for full sentence generation if the model gives one word response 
+import torch
+from transformers import AutoTokenizer, AutoModelForCausalLM, StoppingCriteria, StoppingCriteriaList
+
+# Load the tokenizer and model from Hugging Face
+model_name = "meta-llama/Llama-2-7b-chat-hf"  # Replace with "Llama-2-13b-hf" or "Llama-2-70b-hf" for larger models
+tokenizer_llama2 = AutoTokenizer.from_pretrained(model_name)
+# Set the pad_token to eos_token to avoid padding errors
+tokenizer_llama2.pad_token = tokenizer_llama2.eos_token
+model_llama2 = AutoModelForCausalLM.from_pretrained(model_name, torch_dtype=torch.float16, low_cpu_mem_usage=True)
+
+# Define the custom EOS sequences
+custom_eos_sequences = ["\n", "."]
+
+# class CustomStoppingCriteria(StoppingCriteria):
+#     def __init__(self, tokenizer, eos_tokens):
+#         self.tokenizer = tokenizer
+#         self.eos_token_ids = [self.tokenizer.encode(eos, add_special_tokens=False)[0] for eos in eos_tokens]
+
+#     def __call__(self, input_ids, scores, **kwargs):
+#         # Check if any of the last generated tokens match the custom EOS tokens
+#         return input_ids[0, -1].item() in self.eos_token_ids
+
+# class CustomStoppingCriteria(StoppingCriteria):
+#     def __init__(self, tokenizer, eos_sequences):
+#         super().__init__()
+#         self.tokenizer = tokenizer
+#         self.eos_sequences_ids = [self.tokenizer.encode(eos, add_special_tokens=False) for eos in eos_sequences]
+#         self.max_eos_length = max(len(seq) for seq in self.eos_sequences_ids)
+
+#     def __call__(self, input_ids, scores, **kwargs):
+#         for eos_seq in self.eos_sequences_ids:
+#             if len(input_ids[0]) >= len(eos_seq):
+#                 if input_ids[0][-len(eos_seq):].tolist() == eos_seq:
+#                     print(f"Stopping generation: Detected EOS sequence '{self.tokenizer.decode(eos_seq)}'")
+#                     return True
+#         return False
+class CustomStoppingCriteria(StoppingCriteria):
+    def __init__(self, tokenizer, eos_sequences):
+        super().__init__()
+        self.tokenizer = tokenizer
+        # Tokenize each EOS sequence into a list of token IDs
+        self.eos_sequences_ids = [self.tokenizer.encode(eos, add_special_tokens=False) for eos in eos_sequences]
+        # Determine the maximum length among all EOS sequences
+        self.max_eos_length = max(len(seq) for seq in self.eos_sequences_ids)
+
+    def __call__(self, input_ids, scores, **kwargs):
+        # Iterate through each EOS sequence
+        for eos_seq in self.eos_sequences_ids:
+            seq_length = len(eos_seq)
+            if len(input_ids[0]) >= seq_length:
+                # Extract the last 'n' tokens where 'n' is the length of the EOS sequence
+                last_tokens = input_ids[0][-seq_length:].tolist()
+                if last_tokens == eos_seq:
+                    eos_decoded = self.tokenizer.decode(eos_seq, skip_special_tokens=True)
+                    print(f"Stopping generation: Detected EOS sequence '{eos_decoded}'")
+                    return True
+        return False
+    
 def log_memory_usage(rank):
     # Log GPU memory usage
     print(f"GPU {rank} - Current Memory Allocated: {torch.cuda.memory_allocated(f'cuda:{rank}') / (1024 ** 2):.2f} MB")
@@ -62,6 +121,10 @@ def generate_explanations_MM(model, processor, sample, rank, params, config_logg
     prompt = sample['promptified_questions'][0]
     raw_image = Image.open(sample['image_paths'][0])
     question_id = sample['question_ids'][0]
+    
+    # Initialize the custom stopping criteria
+    stopping_criteria = StoppingCriteriaList([CustomStoppingCriteria(processor.tokenizer, custom_eos_sequences)])
+
     # Process inputs with half precision
     inputs = processor(images=raw_image, text=prompt, return_tensors="pt").to(torch_device, torch.float16)
     if os.path.exists(os.path.join(config_logging['explanation_dir'], f"explanations_{question_id}.pkl")):
@@ -81,12 +144,46 @@ def generate_explanations_MM(model, processor, sample, rank, params, config_logg
                 max_new_tokens=params['max_new_tokens'],
                 use_cache=False,
                 return_dict_in_generate=True,
-                output_scores=True
+                output_scores=True,
+                stopping_criteria=stopping_criteria
             )
             
             # Process the generated output, remove the input token ids 
             generated_token_ids = outputs.sequences[:, inputs['input_ids'].shape[-1]:] 
             decoded_outputs = processor.decode(generated_token_ids.flatten(), skip_special_tokens=True)
+            
+            # only consider the portion of decoded outputs till the first newline character \n.
+            decoded_outputs = decoded_outputs.split('\n')[0]
+            prompt_for_llama2 = f"""
+            Question: Is the color of the object red?
+            Model Response: red
+            Answer: The color of the object is red.
+            Question: Is there a clock in the image?
+            Model Response: no
+            Answer: No, there is no clock in the image.
+            Question: Is there a zebra walking in the image?
+            Model Response: yes
+            Answer: Yes, there is a zebra walking in the image.
+            Question: {sample['questions'][0]}
+            Model Response: {decoded_outputs}
+            Answer:
+            """
+            decoded_outputs_llama2 = None
+            ## Add code if model dosent give one word response, use llama2 to generate complete sentence response
+            if len(decoded_outputs.split()) < 4 and len(decoded_outputs.split()) > 0:
+                model_llama2.to(torch_device)
+                inputs_llama2 = tokenizer_llama2(prompt_for_llama2, return_tensors="pt", padding=True, truncation=True).to(torch_device)
+                
+                stopping_criteria_llama2 = StoppingCriteriaList([CustomStoppingCriteria(tokenizer_llama2, custom_eos_sequences)])
+                ## Generate full sentence response
+                with torch.no_grad():
+                    outputs_llama2 = model_llama2.generate(**inputs_llama2, max_new_tokens=50, temperature=.001, num_beams=2, top_p=0.9, stopping_criteria=stopping_criteria_llama2)
+                # get the generated tokens only and decode them
+                decoded_outputs_llama2 = tokenizer_llama2.decode(outputs_llama2[:, inputs_llama2['input_ids'].shape[-1]:][0], skip_special_tokens=True)
+                # decoded_outputs_llama2 = tokenizer_llama2.decode(outputs_llama2[0], skip_special_tokens=True)
+                
+                # only consider the portion of decoded outputs till the first newline character \n.
+                decoded_outputs_llama2 = decoded_outputs_llama2.split('\n')[0]
             
             # Compute transition probabilities
             transition_scores = model.compute_transition_scores(outputs.sequences, outputs.scores, normalize_logits=True)
@@ -97,9 +194,12 @@ def generate_explanations_MM(model, processor, sample, rank, params, config_logg
             sample[f'response_{i}']['transition_scores'] = transition_scores.cpu().numpy()
             sample[f'response_{i}']['generated_token_ids'] = generated_token_ids.cpu().numpy()
             sample[f'response_{i}']['decoded_outputs'] = decoded_outputs
+            
+            if decoded_outputs_llama2:
+                sample[f'response_{i}']['decoded_outputs_llama2'] = decoded_outputs_llama2
 
             # Clear GPU memory after each step
-            del outputs, generated_token_ids, decoded_outputs
+            del outputs, generated_token_ids, decoded_outputs, decoded_outputs_llama2, transition_scores
             torch.cuda.empty_cache()
             
         # save the sample to a file

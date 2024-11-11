@@ -27,6 +27,7 @@ Llava Inference
 python llava/eval/run_llava.py --model-path "liuhaotian/llava-v1.6-vicuna-7b"  --image-file /home/ubuntu/Trinity/playground/LLaVA/images/demo_cli.gif --query 'Write a caption' 
 ```
 
+
 ### Issues & Resolutions
 - Authorization Error: To access paligemma create an access tokens [here](https://huggingface.co/settings/tokens) with write access.
 
@@ -81,6 +82,26 @@ nohup python src/main_distributed.py --config /home/ubuntu/Multimodal-Uncertaint
 ```bash
 tail -f output_random_100.log
 ```
+```bash
+
+Traceback (most recent call last):
+  File "/home/ubuntu/Multimodal-Uncertainty-Quantification/src/main_serial.py", line 75, in <module>
+    main(args)
+  File "/home/ubuntu/Multimodal-Uncertainty-Quantification/src/main_serial.py", line 69, in main
+    inference_pipeline(config)
+  File "/home/ubuntu/Multimodal-Uncertainty-Quantification/src/main_serial.py", line 27, in inference_pipeline
+    object_detector = pipeline(model=config['grounding']['detector_id'], task="zero-shot-object-detection", device='cuda')
+  File "/opt/conda/envs/llava/lib/python3.10/site-packages/transformers/pipelines/__init__.py", line 782, in pipeline
+    config = AutoConfig.from_pretrained(
+  File "/opt/conda/envs/llava/lib/python3.10/site-packages/transformers/models/auto/configuration_auto.py", line 1119, in from_pretrained
+    raise ValueError(
+ValueError: The checkpoint you are trying to load has model type `grounding-dino` but Transformers does not recognize this architecture. This could be because of an issue with the checkpoint, or because your version of Transformers is out of date.
+```
+- Resolution: 
+```bash
+pip install git+https://github.com/huggingface/transformers.git
+```
+- Link to the issue [here](https://github.com/huggingface/text-generation-inference/issues/1620)
 
 #### Results Directory
 ```plaintext
