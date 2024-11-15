@@ -155,24 +155,25 @@ def generate_explanations_MM(model, processor, sample, rank, params, config_logg
             # only consider the portion of decoded outputs till the first newline character \n.
             decoded_outputs = decoded_outputs.split('\n')[0]
             prompt_for_llama2 = f"""
-            Question: Is the color of the object red?
-            Model Response: red
-            Answer: The color of the object is red.
-            Question: Is there a clock in the image?
-            Model Response: no
-            Answer: No, there is no clock in the image.
-            Question: Is there a zebra walking in the image?
-            Model Response: yes
-            Answer: Yes, there is a zebra walking in the image.
-            Question: {sample['questions'][0]}
-            Model Response: {decoded_outputs}
-            Answer:
+            QUESTION: Is the color of the object red?
+            MODEL: red
+            LLAMA2: The color of the object is red.
+            QUESTION: Is there a clock in the image?
+            MODEL: no
+            LLAMA2: No, there is no clock in the image.
+            QUESTION: Is there a zebra walking in the image?
+            MODEL: yes
+            LLAMA2: Yes, there is a zebra walking in the image.
+            QUESTION: {sample['questions'][0]}
+            MODEL: {decoded_outputs}
+            LLAMA2:
             """
             decoded_outputs_llama2 = None
             ## Add code if model dosent give one word response, use llama2 to generate complete sentence response
             if len(decoded_outputs.split()) < 4 and len(decoded_outputs.split()) > 0:
-                model_llama2.to(torch_device)
-                inputs_llama2 = tokenizer_llama2(prompt_for_llama2, return_tensors="pt", padding=True, truncation=True).to(torch_device)
+                torch_device_llama2 = 'cuda:2' # If you are running the code with CUDA_VISIBLE_DEVICES=5,6,7 - then use cuda:2 to access gpu 7, not cuda:7
+                model_llama2.to(torch_device_llama2)
+                inputs_llama2 = tokenizer_llama2(prompt_for_llama2, return_tensors="pt", padding=True, truncation=True).to(torch_device_llama2)
                 
                 stopping_criteria_llama2 = StoppingCriteriaList([CustomStoppingCriteria(tokenizer_llama2, custom_eos_sequences)])
                 ## Generate full sentence response
@@ -460,16 +461,19 @@ def generate_grounded_segmentation(
                     continue
                 else:
                     sample_grounding[key] = {}
-                    response = sample_explanations.get(key)['decoded_outputs']
+                    # check if decoded_outputs_llama2 is present, if not use decoded_outputs
+                    response = sample_explanations[key].get('decoded_outputs_llama2', sample_explanations[key]['decoded_outputs'])
                     sample_grounding[key]['decoded_outputs'] = response
                 image = sample_explanations['image_paths'][0]
-                reponse_jsonified = extract_json_from_text(
-                    response)
-                labels = [reponse_jsonified.get('explanation')]
+                # reponse_jsonified = extract_json_from_text(response) # remove json extraction, as we are not prompting the model to get json response
+                # labels = [reponse_jsonified.get('explanation')]
+                labels = [response]
                 if isinstance(image, str):
                     image = load_image(image)
                 try:
                     detections = detect(image, labels, threshold, object_detector)
+                    # grounding from grounding dino 
+                    sample_grounding[key]['grounding_with_gd_score'] = detections[0].score
                 except Exception as e:
                     print('-'*50)
                     print(f"Detection error for response {key}: {e}")
@@ -480,10 +484,10 @@ def generate_grounded_segmentation(
                     detections = segment(image, detections, True,
                                         segmentator, processor, rank)
                     # sample_explanations[key]['detections'] = detections
-                    sample_grounding[key]['detections'] = detections[0]
+                    # sample_grounding[key]['detections_gdsam'] = detections[0]
                     # sample_explanations[key]['image'] = np.array(image)
                     # sample_explanations[key]['grounding_score'] = detections[0].score
-                    sample_grounding[key]['grounding_score'] = detections[0].score
+                    sample_grounding[key]['grounding_with_gd_sam_score'] = detections[0].score
                 except Exception as e:
                     print('-'*50)
                     print(f"Segmentation error for response {key}: {e}")

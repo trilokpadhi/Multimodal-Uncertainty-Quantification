@@ -31,5 +31,5 @@ uncertainty:
   get_uncertainty: true
 
 logging:
-  explanation_dir: "runs/llava_gqa_yes_gsam_grounding_random_100_test_7nov/explanations_test"
-  grounding_dir: "runs/llava_gqa_yes_gsam_grounding_random_100_test_7nov/grounding_test"
+  explanation_dir: "runs/llava_gqa_yes_gsam_grounding_random_100_test_15nov/explanations_test"
+  grounding_dir: "runs/llava_gqa_yes_gsam_grounding_random_100_test_15nov/grounding_test"

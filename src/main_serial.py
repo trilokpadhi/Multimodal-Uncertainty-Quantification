@@ -28,36 +28,37 @@ def inference_pipeline(config):
     object_detector.model = object_detector.model.half().to('cuda')
     segmentator = AutoModelForMaskGeneration.from_pretrained(config['grounding']['segmenter_id']).half().to('cuda')
     processor = AutoProcessor.from_pretrained(config['grounding']['segmenter_id'])
-    num_samples = config['data']['samples']
+    num_samples = config['data']['samples'] 
 
-    for idx, sample in tqdm(enumerate(dataloader), total=num_samples, desc="Processing samples"):
+    for sample in tqdm(dataloader, total=num_samples, desc="Processing samples"):
 
         # Step 1: Run MM model (LLaVA)
         question_id = sample['question_ids'][0]
+        
+        print(f"Processing question {question_id}")
         # model_responses_with_explanations = generate_explanations_MM(model_llava, processor_llava, sample, config['mm_model'])
         model_responses_with_explanations = generate_explanations_MM(model_llava, processor_llava, sample, rank=0, params=config['mm_model'], config_logging=config['logging'])
         
-        # Ensure that the explanation directory exists
-        explanation_dir = config['logging']['explanation_dir']
-        os.makedirs(explanation_dir, exist_ok=True)
-        explanation_file_path = f"{explanation_dir}/explanations_{idx}_{question_id}.pkl"
-        with open(explanation_file_path, 'wb') as f:
-            pickle.dump(model_responses_with_explanations, f)
-        print(f'Explanations for question {question_id} saved to {explanation_file_path}')
+        # # Ensure that the explanation directory exists
+        # explanation_dir = config['logging']['explanation_dir']
+        # os.makedirs(explanation_dir, exist_ok=True)
+        # explanation_file_path = f"{explanation_dir}/explanations_{idx}_{question_id}.pkl"
+        # with open(explanation_file_path, 'wb') as f:
+        #     pickle.dump(model_responses_with_explanations, f)
+        # print(f'Explanations for question {question_id} saved to {explanation_file_path}')
 
         # Step 3: Grounding with DINO
-        model_responses_with_explanations_grounding = generate_grounded_segmentation(
-            model_responses_with_explanations,
-            threshold=config['grounding']['threshold'],
-            object_detector=object_detector, segmentator=segmentator, processor=processor)
+        generate_grounded_segmentation(model_responses_with_explanations,threshold=config['grounding']['threshold'],
+                                        object_detector=object_detector, segmentator=segmentator, processor=processor, 
+                                        rank=0, config_logging=config['logging'])
         
         # Ensure that the grounding directory exists
-        grounding_dir = config['logging']['grounding_dir']
-        os.makedirs(grounding_dir, exist_ok=True)
-        grounding_file_path = f"{grounding_dir}/grounding_{idx}_{question_id}.pkl"
-        with open(grounding_file_path, 'wb') as f:
-            pickle.dump(model_responses_with_explanations_grounding, f)
-        print(f'Groundings for question {question_id} saved to {grounding_file_path}')
+        # grounding_dir = config['logging']['grounding_dir']
+        # os.makedirs(grounding_dir, exist_ok=True)
+        # grounding_file_path = f"{grounding_dir}/grounding_{idx}_{question_id}.pkl"
+        # with open(grounding_file_path, 'wb') as f:
+        #     pickle.dump(model_responses_with_explanations_grounding, f)
+        # print(f'Groundings for question {question_id} saved to {grounding_file_path}')
 
 # Main function
 def main(args):
