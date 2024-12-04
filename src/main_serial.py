@@ -4,7 +4,7 @@ import logging
 import yaml
 import torch
 from extraction_utils import extract_triples
-from data_utils import get_dataloader
+from data_utils import get_dataloader, get_vqa_dataloader
 from inference_utils import generate_explanations_MM, generate_grounded_segmentation
 from transformers import pipeline, AutoProcessor, LlavaForConditionalGeneration, AutoModelForMaskGeneration
 import pickle
@@ -17,8 +17,10 @@ logging.basicConfig(filename='inference_log.log', level=logging.INFO)
 # Inference Pipeline (serial version)
 def inference_pipeline(config):
     # Load data
-    dataloader = get_dataloader(config['data'], rank=0, world_size=1)
-    
+    # dataloader = get_dataloader(config['data'], rank=0, world_size=1) # for GQA dataset
+    # for VQA dataset
+    dataloader = get_vqa_dataloader(config['data'], rank=0, world_size=1) # for VQA dataset
+
     # Load models
     model_id_llava = config['mm_model']['model_path']
     model_llava = LlavaForConditionalGeneration.from_pretrained(model_id_llava).to('cuda')
