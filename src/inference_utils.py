@@ -170,7 +170,8 @@ def generate_explanations_MM(model, processor, sample, rank, params, config_logg
             """
             decoded_outputs_llama2 = None
             ## Add code if model dosent give one word response, use llama2 to generate complete sentence response
-            if len(decoded_outputs.split()) < 4 and len(decoded_outputs.split()) > 0:
+            # if len(decoded_outputs.split()) < 4 and len(decoded_outputs.split()) > 0:
+            if 0 < len(decoded_outputs.split()) < 4:
                 torch_device_llama2 = 'cuda:2' # If you are running the code with CUDA_VISIBLE_DEVICES=5,6,7 - then use cuda:2 to access gpu 7, not cuda:7
                 model_llama2.to(torch_device_llama2)
                 inputs_llama2 = tokenizer_llama2(prompt_for_llama2, return_tensors="pt", padding=True, truncation=True).to(torch_device_llama2)

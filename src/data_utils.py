@@ -166,15 +166,16 @@ class VQADataset(Dataset):
         # Example prompt with few-shot examples
         few_shot_examples = """Question: What is the color of the object?
         Answer: The color of the object is red.
-        Question: Is the object big or small?
-        Answer: The object is big.
-        Question: Do you see people in the image?
-        Answer: Yes, there are people in the image.
+        Question: What are the people doing ?
+        Answer: The people in the image are playing soccer.
+        Question: What animal is in the image?
+        Answer: The animal is a cat.
         """
-        prompt = f"""USER: Answer the questions based on the examples provided:
+        prompt = f"""USER: Answer the questions. Here are few examples:
         {few_shot_examples}
         <image>
         {question}
+        ASSISTANT: 
         """
         return prompt
 

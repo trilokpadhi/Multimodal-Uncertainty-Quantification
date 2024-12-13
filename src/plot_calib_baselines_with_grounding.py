@@ -9,7 +9,7 @@ from sklearn.pipeline import make_pipeline
 import seaborn as sns
 from tqdm import tqdm
 from sklearn.metrics import mean_squared_error
-import xgboost as xgb
+# import xgboost as xgb
 
 # Function to apply min-max scaling to a list of values
 def min_max_scale(values):
@@ -75,8 +75,14 @@ def load_grounding_scores(root_dir_grounding):
                 if 'response' in key:
                     response_key = key
                     response = grounding_data.get(response_key, {})
-                    if 'grounding_score' in response:
-                        grounding_score = response['grounding_score']
+                    ## check if decoded output is '' or tokens less than 3
+                    if 'decoded_output' in response:
+                        decoded_output = response['decoded_output']
+                        if len(decoded_output.split()) < 3:
+                            continue
+                    if 'grounding_with_gd_score' in response:
+                        # grounding_score = response['grounding_score']
+                        grounding_score = response.get('grounding_with_gd_score', None)
                         grounding_score_list.append(grounding_score)
                     else:
                         # Assign a default grounding score if missing
@@ -85,9 +91,9 @@ def load_grounding_scores(root_dir_grounding):
         # question_grounding_scores_dict[question_id] = sum(grounding_score_list)/len(grounding_score_list) if len(grounding_score_list) > 0 else None
         if grounding_score_list:
             average_score = sum(grounding_score_list) / len(grounding_score_list)
-            question_grounding_scores_dict[question_id] = average_score
+            question_grounding_scores_dict[str(question_id)] = average_score # stringifying question_id to match the format of question_ids
         else:
-            question_grounding_scores_dict[question_id] = None  # Assign a default score
+            question_grounding_scores_dict[str(question_id)] = None  # Assign a default score
     return question_grounding_scores_dict
 
 # Fit polynomial regression and return coefficients
@@ -96,10 +102,10 @@ def fit_polynomial_regression(X_val, y_val, degree=2, alpha=3.0):
     model.fit(X_val, y_val)
     return model.named_steps['ridge'].coef_, model.named_steps['polynomialfeatures']
 
-def fit_xgboost(X_val, y_val):
-    model = xgb.XGBRegressor(n_estimators=100, max_depth=5, learning_rate=0.1, objective='reg:squarederror')
-    model.fit(X_val, y_val)
-    return model
+# def fit_xgboost(X_val, y_val):
+#     model = xgb.XGBRegressor(n_estimators=100, max_depth=5, learning_rate=0.1, objective='reg:squarederror')
+#     model.fit(X_val, y_val)
+#     return model
 
 # Prepare the dataset for training and validation
 def split_dataset(predictive_entropy, lexical_similarity, semantic_entropy, semantic_clusters, grounding_scores, accuracies, val_percent=0.30, seed=42):
@@ -471,9 +477,17 @@ def run_pipeline(uncertainty_filepath, grounding_root_dir, save_path_prefix, see
 if __name__ == "__main__":
     # Replace the following paths with your actual file paths
     # uncertainty_filepath = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/uncertainty/uncertainty_scores_baseline.pkl'
-    uncertainty_filepath = '/home/ec2-user/Multimodal-Uncertainty-Quantification/runs/uncertainty/uncertainty_scores_baseline.pkl'
-    grounding_root_dir = '/mnt/myebsvolume/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_10000/grounding/'
-    save_path_prefix = "reliability_diagram_with_grounding_7000"
+    # uncertainty_filepath = '/home/ec2-user/Multimodal-Uncertainty-Quantification/runs/uncertainty/uncertainty_scores_baseline.pkl'
+    # grounding_root_dir = '/mnt/myebsvolume/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_10000/grounding/'
+    
+    ### *** CHANGE THE FOLLOWING PATHS *** ### -- below is for gqa dataset
+    # uncertainty_filepath = '/mnt/data/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_1000_test_17nov/uncertainty/uncertainty_scores_baseline.pkl'
+    # grounding_root_dir = '/mnt/data/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_1000_test_17nov/grounding_test/'
+    
+    ### for vqa dataset
+    uncertainty_filepath = '/home/ubuntu/trilok/Multimodal-Uncertainty-Quantification/runs_vqa/llava_vqa_yes_gsam_grounding_random_1000/uncertainty/uncertainty_scores_baseline.pkl'
+    grounding_root_dir = '/home/ubuntu/trilok/Multimodal-Uncertainty-Quantification/runs_vqa/llava_vqa_yes_gsam_grounding_random_1000/grounding/'
+    save_path_prefix = "reliability_diagram_VQA_gsam_grounding_random_1000"
     seed = random.randint(1, 1000)
     print(f"Using random seed: {seed}")
     run_pipeline(uncertainty_filepath, grounding_root_dir, save_path_prefix, seed)

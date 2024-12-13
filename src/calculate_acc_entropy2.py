@@ -1,3 +1,9 @@
+"""
+This was an old script that was used to calculate the accuracy and entropy from the explanations and groundings, Please ignore this script and use baselines/run_baselines_parallel.py instead
+
+"""
+
+
 import torch
 import pickle
 import os
@@ -68,9 +74,9 @@ def check_entailment(textA, textB):
         return False
 
 # Load the files 
-explanation_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/explanations'
-grounding_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/grounding'
-uncertainty_dir = '/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_100/uncertainty'
+explanation_dir = '/mnt/data/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_1000_test_17nov/explanations_test'
+grounding_dir = '/mnt/data/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_1000_test_17nov/grounding_test'
+uncertainty_dir = '/mnt/data/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_1000_test_17nov/uncertainty'
 
 # check if the directories exist
 if not os.path.exists(explanation_dir):
@@ -90,6 +96,8 @@ grounding_files = os.listdir(grounding_dir)
 # Load the files
 uncertainty_from_grounding_entropy = {}
 
+
+
 # get entropy from explanations
 for file in tqdm(explanation_files, desc = 'Calculating entropy from explanations', total = len(explanation_files)):
     with open(explanation_dir + '/' + file, 'rb') as f:
@@ -100,7 +108,8 @@ for file in tqdm(explanation_files, desc = 'Calculating entropy from explanation
         for key in explanation_meta_data.keys():
             if 'response' in key:
                 response_meta_data = explanation_meta_data[key]
-                log_likelihood = get_log_likelihood(response_meta_data['outputs']['scores'], response_meta_data['outputs']['sequences'].squeeze(), tokens_contain_input_ids = True)
+                # log_likelihood = get_log_likelihood(response_meta_data['outputs']['scores'], response_meta_data['outputs']['sequences'].squeeze(), tokens_contain_input_ids = True) # I have the transition scores, so I can calculate the log likelihood by taking the sum of the transition scores 
+                log_likelihood = explanation_meta_data[key]['transition_scores'].sum()
                 explanation_meta_data[key]['log_likelihood'] = log_likelihood
                 log_likelihoods.append(log_likelihood.item())
                 
@@ -122,7 +131,8 @@ for file in tqdm(grounding_files, desc = 'Calculating grounding from explanation
             if 'response' in key:
                 response_meta_data = grounding_meta_data[key]
                 try:
-                    grounding = response_meta_data['grounding_score'] 
+                    # grounding = response_meta_data['grounding_score'] 
+                    grounding = response_meta_data['grounding_with_gd_score']
                 except:
                     continue
                 uncertainty_from_grounding.append(1 - grounding)
@@ -133,23 +143,47 @@ for file in tqdm(grounding_files, desc = 'Calculating grounding from explanation
         uncertainty_from_grounding_entropy[question_id]['uncertainty_from_grounding'] = uncertainty_from_grounding_
             
                 
-# get accuracy from groundings
-for file in tqdm(grounding_files, desc = 'Calculating accuracy from groundings', total = len(grounding_files)):
-    with open(grounding_dir + '/' + file, 'rb') as f:
-        grounding_meta_data = pickle.load(f)
+# get accuracy from explanations
+# for file in tqdm(grounding_files, desc = 'Calculating accuracy from groundings', total = len(grounding_files)):
+#     with open(grounding_dir + '/' + file, 'rb') as f:
+#         grounding_meta_data = pickle.load(f)
+#         question_id = file.split('_')[-1].replace('.pkl', '')
+        
+#         entailment = []
+#         for key in grounding_meta_data.keys():
+#             if 'response' in key:
+#                 response_meta_data = grounding_meta_data[key]
+#                 try:
+#                     # model_explanation = extract_json_from_text(response_meta_data['decoded_outputs'])['explanation'] # fetch 'decoded_outputs_llama2' if it exists, else fetch 'decoded_outputs'
+#                     model_explanation = response_meta_data.get('decoded_outputs_llama2', response_meta_data.get('decoded_outputs', ''))
+#                 except:
+#                     continue
+#                 ground_truth = grounding_meta_data['full_answers'][0]
+#                 entailment.append(check_entailment(ground_truth, model_explanation))
+#             else:
+#                 continue
+#         entailed_responses = entailment.count(True)
+#         accuracy = entailed_responses / len(entailment)
+#         uncertainty_from_grounding_entropy[question_id]['accuracy'] = accuracy
+
+# I am not sure why accuracy was calculated from groundings, I will calculate it from explanations
+# get accuracy from explanations
+for file in tqdm(explanation_files, desc = 'Calculating accuracy from explanations', total = len(explanation_files)):
+    with open(explanation_dir + '/' + file, 'rb') as f:
+        explanation_meta_data = pickle.load(f)
         question_id = file.split('_')[-1].replace('.pkl', '')
         
         entailment = []
-        for key in grounding_meta_data.keys():
+        for key in explanation_meta_data.keys():
             if 'response' in key:
-                response_meta_data = grounding_meta_data[key]
+                response_meta_data = explanation_meta_data[key]
                 try:
-                    model_explanation = extract_json_from_text(response_meta_data['decoded_outputs'])['explanation'] 
+                    # model_explanation = extract_json_from_text(response_meta_data['decoded_outputs'])['explanation'] # fetch 'decoded_outputs_llama2' if it exists, else fetch 'decoded_outputs'
+                    model_explanation = response_meta_data.get('decoded_outputs_llama2', response_meta_data.get('decoded_outputs', ''))
                 except:
                     continue
-                ground_truth = grounding_meta_data['full_answers'][0]
+                ground_truth = explanation_meta_data['full_answers'][0]
                 entailment.append(check_entailment(ground_truth, model_explanation))
-                
             else:
                 continue
         entailed_responses = entailment.count(True)
