@@ -1,0 +1,36 @@
+# config.yaml
+samples: 20
+triple_extraction: false
+data:
+  dataset: "vqa"
+  root_dir: "/home/ubuntu/trilok/Multimodal-Uncertainty-Quantification/dataset/VQA/data"
+  image_dir: "train2014"
+  annotation_file: "annotations/v2_mscoco_train2014_annotations.json"
+  question_file: "questions/v2_OpenEnded_mscoco_train2014_questions_filtered_1000.json"
+  dataset_type: "json"
+  samples: 1000
+mm_model:
+  model_path: "llava-hf/llava-1.5-7b-hf"
+  temperature: 1
+  top_p: 1 
+  num_beams: 1
+  max_new_tokens: 512
+  no_of_responses_sampled_per_image: 20
+
+
+triples_model:
+  model_id: "meta-llama/Meta-Llama-3-8B-Instruct"
+grounding:
+  detector_id: "IDEA-Research/grounding-dino-tiny"
+  segmenter_id: "facebook/sam-vit-base"
+  threshold: 0.01
+  # dino_model_path: "path/to/dino/model"
+  # top_k: 5
+
+uncertainty:
+  method: "log_likelihood"
+  get_uncertainty: true
+
+logging:
+  explanation_dir: "runs_vqa/llava_vqa_yes_gsam_grounding_random_1000/explanations"
+  grounding_dir: "runs_vqa/llava_vqa_yes_gsam_grounding_random_1000/grounding"
