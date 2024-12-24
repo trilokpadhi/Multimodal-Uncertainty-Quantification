@@ -1,0 +1,23 @@
+model_path: "liuhaotian/llava-v1.6-vicuna-7b"
+model_base: null
+image_file: "path/to/image.png"
+query: "Your query here"
+conv_mode: null
+sep: ","
+temperature: 1
+top_p: 1 
+num_beams: 1
+max_new_tokens: 512
+data_path: "/home/ubuntu/Multimodal-Uncertainty-Quantification/MMT_Bench/MMT-Bench_VAL.tsv"
+no_of_responses_each_sample: 20
+debug: true # debug = false runs for complete dataset, debug = true runs for num_images sample
+num_images: 4
+category: "hallucination"
+uncertainty_method: "node_and_structural_similarity"
+get_uncertainty: true
+get_response: false
+# outputs and logs
+output_path: "debug_responses/test.json" # uq from both input and output
+responses_path: "debug_responses/debug_bin_1_kernel_llava_mmt_output_uq_io_graph_similarity_temp_1_topp_1.json" # uq from both input and output
+log_file: "llava_mmt.log"
+keys: [2789, 2790]

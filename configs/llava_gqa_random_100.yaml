@@ -1,0 +1,35 @@
+# config.yaml
+samples: 20
+triple_extraction: false
+data:
+  dataset: "gqa"
+  root_dir: "/mnt/my_ebs_volume/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/"
+  image_dir: "images"
+  question_file: "questions1.2/train_all_questions/train_all_questions_0_random_filtered_100.json"
+  dataset_type: "json"
+  samples: 20
+mm_model:
+  model_path: "llava-hf/llava-1.5-7b-hf"
+  temperature: 1
+  top_p: 1 
+  num_beams: 1
+  max_new_tokens: 512
+  no_of_responses_sampled_per_image: 20
+
+
+triples_model:
+  model_id: "meta-llama/Meta-Llama-3-8B-Instruct"
+grounding:
+  detector_id: "IDEA-Research/grounding-dino-tiny"
+  segmenter_id: "facebook/sam-vit-base"
+  threshold: 0.01
+  # dino_model_path: "path/to/dino/model"
+  # top_k: 5
+
+uncertainty:
+  method: "log_likelihood"
+  get_uncertainty: true
+
+logging:
+  explanation_dir: "runs/llava_gqa_yes_gsam_grounding_random_100_test_15nov/explanations_test"
+  grounding_dir: "runs/llava_gqa_yes_gsam_grounding_random_100_test_15nov/grounding_test"
