@@ -31,39 +31,40 @@ def main():
     """
     ======== Randomly Sample Data from a JSON File ========
     """
-    """
-    for GQA dataset
-    """
-    # questions_file = '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/questions1.2/train_all_questions/train_all_questions_0.json'
-    # sample_size = 10000  # Change this value to sample a different number of questions
-    # output_file = '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/questions1.2/train_all_questions/train_all_questions_0_random_filtered_10000.json'
-    
-    """
-    for VQA dataset
-    """
-    # question file path with grounding : /home/ubuntu/trilok/Multimodal-Uncertainty-Quantification/dataset/VQA/data/questions/v2_OpenEnded_mscoco_train2014_questions_grounded.json
-    # question file path without grounding : /home/ubuntu/trilok/Multimodal-Uncertainty-Quantification/dataset/VQA/data/questions/v2_OpenEnded_mscoco_train2014_questions.json
-    questions_file = '/home/ubuntu/trilok/Multimodal-Uncertainty-Quantification/dataset/VQA/data/questions/v2_OpenEnded_mscoco_train2014_questions_grounded.json'
-    sample_size = 2000  # Change this value to sample a different number of questions
+    # for GQA dataset
+    questions_file = '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/datasets_/GQA/questions1.2/train_all_questions/train_all_questions_0.json'
+    sample_size = 1000  # Change this value to sample a different number of questions
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_file = f'/home/ubuntu/trilok/Multimodal-Uncertainty-Quantification/dataset/VQA/data/questions/v2_OpenEnded_mscoco_train2014_questions_grounded_{sample_size}_{current_time}.json'
+    output_file = f'/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/datasets_/GQA/questions1.2/train_all_questions/train_all_questions_0_random_filtered_{sample_size}_{current_time}.json'
+    
+    # for VQA dataset
+    # # question file path with grounding : /home/ubuntu/trilok/Multimodal-Uncertainty-Quantification/dataset/VQA/data/questions/v2_OpenEnded_mscoco_train2014_questions_grounded.json
+    # # question file path without grounding : /home/ubuntu/trilok/Multimodal-Uncertainty-Quantification/dataset/VQA/data/questions/v2_OpenEnded_mscoco_train2014_questions.json
+    # questions_file = '/home/ubuntu/trilok/Multimodal-Uncertainty-Quantification/dataset/VQA/data/questions/v2_OpenEnded_mscoco_train2014_questions_grounded.json'
+    # sample_size = 2000  # Change this value to sample a different number of questions
+    # current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # output_file = f'/home/ubuntu/trilok/Multimodal-Uncertainty-Quantification/dataset/VQA/data/questions/v2_OpenEnded_mscoco_train2014_questions_grounded_{sample_size}_{current_time}.json'
 
     # Load dataset
-    # dataset = load_json_file(questions_file) # for GQA dataset
-    full_dataset = load_json_file(questions_file) # for VQA dataset
-    dataset = full_dataset['questions']
-
+    # for GQA dataset
+    dataset = load_json_file(questions_file)
     # Sample the dataset
     sampled_data = sample_data(dataset, sample_size)
-
-    # Convert the sampled data back to dictionary (from list of tuples)
-    # sampled_dict = dict(sampled_data)
-
     # Save the sampled dataset
-    # save_json_file(sampled_dict, output_file) # for GQA dataset
+    sampled_dict = dict(sampled_data)
+    save_json_file(sampled_dict, output_file) 
+    
+    # for VQA dataset
+    # full_dataset = load_json_file(questions_file) # for VQA dataset
+    # dataset = full_dataset['questions']
+    # Convert the sampled data back to dictionary (from list of tuples)
+    sampled_dict = dict(sampled_data) # for GQA dataset
+
+
+    # for VQA dataset
     # save the list of dictionaries to a json file
     # for VQA dataset I would prefer the same format as the original file which is data.keys()
-    save_json_file({'info': full_dataset['info'], 'task_type': full_dataset['task_type'], 'data_type': full_dataset['data_type'], 'license': full_dataset['license'], 'data_subtype': full_dataset['data_subtype'], 'questions': sampled_data}, output_file)
+    # save_json_file({'info': full_dataset['info'], 'task_type': full_dataset['task_type'], 'data_type': full_dataset['data_type'], 'license': full_dataset['license'], 'data_subtype': full_dataset['data_subtype'], 'questions': sampled_data}, output_file)
 
     print(f"Sampled {sample_size} entries and saved to {output_file}")
     
