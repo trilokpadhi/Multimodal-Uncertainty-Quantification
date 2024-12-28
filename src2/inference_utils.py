@@ -203,8 +203,8 @@ def generate_explanations_MM(
     repeated_images = [raw_image] * params['no_of_responses_sampled_per_image']
 
     # 4) Prepare inputs for Llava
-    from transformers import StoppingCriteriaList
-    stopping_criteria = StoppingCriteriaList([CustomStoppingCriteria(processor_llava.tokenizer, custom_eos_sequences)])
+    # from transformers import StoppingCriteriaList
+    # stopping_criteria = StoppingCriteriaList([CustomStoppingCriteria(processor_llava.tokenizer, custom_eos_sequences)])
 
     inputs = processor_llava(
         images=repeated_images,
@@ -224,7 +224,7 @@ def generate_explanations_MM(
         use_cache=False,
         return_dict_in_generate=True,
         output_scores=True,
-        stopping_criteria=stopping_criteria
+        # stopping_criteria=stopping_criteria
     )
 
     # 5) Decode each of the 20 responses
@@ -257,24 +257,23 @@ def generate_explanations_MM(
 
     # 7) If any short answers exist, run Llama2 in batch
     expansions = [None] * batch_size  # Will hold final expansions for short answers
+    raw_llama2_responses = [None] * batch_size  # Will hold raw Llama2 responses for short answers
     for i in range(batch_size):
-        # Default to the raw Llava output (if not short).
-        expansions[i] = raw_decoded_responses[i]
+        # Default to None
+        expansions[i] = None
+        raw_llama2_responses[i] = None
 
     if len(short_answers) > 0:
         # Build a prompt for each short answer
         llama2_prompts = []
         for short_ans in short_answers:
             prompt_for_llama2 = f"""
-            QUESTION: Is the color of the object red?
-            MODEL: red
-            LLAMA2: The color of the object is red.
-            QUESTION: Is there a clock in the image?
-            MODEL: no
-            LLAMA2: No, there is no clock in the image.
-            QUESTION: Is there a zebra walking in the image?
-            MODEL: yes
-            LLAMA2: Yes, there is a zebra walking in the image.
+            QUESTION: What animal is shown?
+            MODEL: dog
+            LLAMA2: The animal shown is a dog.
+            QUESTION: What is the girl eating?
+            MODEL: apple
+            LLAMA2: The girl is eating an apple.
             QUESTION: {question_text}
             MODEL: {short_ans}
             LLAMA2:
@@ -315,6 +314,7 @@ def generate_explanations_MM(
             # Truncate to the first newline (if present)
             expanded_text = expanded_text.split('\n')[0].strip()
             expansions[i_response] = expanded_text
+            raw_llama2_responses[i_response] = expanded_text
 
     # 8) Now expansions[] holds the final text for all 20 responses
     #    Let's store them in sample.
@@ -322,7 +322,9 @@ def generate_explanations_MM(
         sample[f"response_{i}"] = {
             "prompt": sample['promptified_questions'][0],
             "transition_scores": transition_scores[i],
-            "decoded_outputs": expansions[i]
+            "decoded_outputs": expansions[i] if expansions[i] is not None else raw_decoded_responses[i],
+            "raw_decoded_outputs_llava": raw_decoded_responses[i],
+            "raw_decoded_outputs_llama2": raw_llama2_responses[i]
         }
 
     # 9) Save to disk
@@ -660,7 +662,7 @@ if __name__ == "__main__":
     
     model = LlavaForConditionalGeneration.from_pretrained(config['mm_model']['model_path'])
     processor = AutoProcessor.from_pretrained(config['mm_model']['model_path'])
-    dataloader = get_dataloader('/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA', 'json', 0, 1)
+    dataloader = get_dataloader_gqa('/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA', 'json', 0, 1)
     
     print('Loading data')
     log_memory_usage(0)

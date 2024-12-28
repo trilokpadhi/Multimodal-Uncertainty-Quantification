@@ -132,7 +132,6 @@ class VQADataset(Dataset):
         sampled_question_ids = {ques['question_id'] for ques in self.questions}
         self.qa_map = {ann['question_id']: ann for ann in self.annotations if ann['question_id'] in sampled_question_ids}
         self.question_map = {ques['question_id']: ques for ques in self.questions}
-
         self.question_ids = list(self.qa_map.keys())
 
     def __len__(self):
@@ -216,12 +215,9 @@ def get_vqa_dataloader(config, rank, world_size):
     dataset_type = config['dataset_type']
     print(f"Dataset type: {dataset_type}")
     
-    if dataset_type.lower() == 'json':
-        dataset = VQADataset(config)
-        sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank, shuffle=False)
-        return DataLoader(dataset, batch_size=1, collate_fn=vqa_collate_fn, sampler=sampler)
-    else:
-        raise ValueError(f"Invalid dataset type: {dataset_type}")
+    dataset = VQADataset(config)
+    sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank, shuffle=False)
+    return DataLoader(dataset, batch_size=1, collate_fn=vqa_collate_fn, sampler=sampler)
     
     
 if __name__ == "__main__":

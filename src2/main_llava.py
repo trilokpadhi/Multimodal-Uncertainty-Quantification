@@ -16,7 +16,15 @@ def llava_inference_pipeline(config, rank, world_size):
 
     # 1. Get subset of data for this rank
     # dataloader = get_vqa_dataloader(config['data'], rank=rank, world_size=world_size)
-    dataloader = get_gqa_dataloader(config['data'], rank=rank, world_size=world_size)
+    # dataloader = get_gqa_dataloader(config['data'], rank=rank, world_size=world_size)
+    # get vqa dataloader
+    if config['data']['dataset'] == 'vqa':
+        dataloader = get_vqa_dataloader(config['data'], rank=rank, world_size=world_size)
+    elif config['data']['dataset'] == 'gqa':
+        dataloader = get_gqa_dataloader(config['data'], rank=rank, world_size=world_size)
+    else:
+        raise ValueError("Invalid dataset specified in the config file.")
+    
 
     # 2. Load LLaVA
     model_id_llava = config['mm_model']['model_path']
