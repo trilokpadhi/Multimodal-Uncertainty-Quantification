@@ -3,11 +3,11 @@ samples: 20
 triple_extraction: false
 data:
   dataset: "gqa"
-  root_dir: "/mnt/my_ebs_volume/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/"
+  root_dir: "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/datasets_/GQA"
   image_dir: "images"
-  question_file: "questions1.2/train_all_questions/train_all_questions_0_random_filtered_100.json"
+  question_file: "questions1.2/train_all_questions/train_all_questions_0_random_filtered_1000_20241224_193025.json"
   dataset_type: "json"
-  samples: 20
+  samples: null
 mm_model:
   model_path: "llava-hf/llava-1.5-7b-hf"
   temperature: 1
@@ -31,5 +31,5 @@ uncertainty:
   get_uncertainty: true
 
 logging:
-  explanation_dir: "runs/llava_gqa_yes_gsam_grounding_random_100_test_15nov/explanations_test"
-  grounding_dir: "runs/llava_gqa_yes_gsam_grounding_random_100_test_15nov/grounding_test"
+  explanation_dir: "runs/llava_gqa_yes_gsam_grounding_random_100_test_24dec_/explanations_test"
+  grounding_dir: "runs/llava_gqa_yes_gsam_grounding_random_100_test_24dec_/grounding_test"

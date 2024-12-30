@@ -117,224 +117,232 @@ def save_results(results, directory, filename):
     print(f'Results saved to {file_path}')
     
 ########### Below implementation is for generating explanations using Llava model without LLama 2 completions ###########
-# def generate_explanations_MM(model, processor, sample, rank, params, config_logging):
-#     # Assign the model and inputs to the correct device based on rank
-#     torch_device = f'cuda:{rank}' if torch.cuda.is_available() else 'cpu'
-#     model = model.half().to(torch_device)  # Move model to half precision and to correct GPU
-#     prompt = [sample['promptified_questions'][0]] * params['no_of_responses_sampled_per_image']
-#     raw_image = Image.open(sample['image_paths'][0])
-#     question_id = sample['question_ids'][0]
-    
-#     # Initialize the custom stopping criteria
-#     stopping_criteria = StoppingCriteriaList([CustomStoppingCriteria(processor.tokenizer, custom_eos_sequences)])
+def generate_explanations_MM(model, processor, sample, rank, params, config_logging):
+    torch_device = f'cuda:{rank}' if torch.cuda.is_available() else 'cpu'
+    # model = model.half().to(torch_device)
+    raw_image = Image.open(sample['image_paths'][0])
+    question_id = sample['question_ids'][0]
 
-#     # Process inputs with half precision
-#     inputs = processor(images=[raw_image] * params['no_of_responses_sampled_per_image'], text=prompt, return_tensors="pt").to(torch_device, torch.float16)
-#     if os.path.exists(os.path.join(config_logging['explanation_dir'], f"explanations_{question_id}.pkl")):
-#         print(f"Explanations for question {question_id} already exist at explanations_{question_id}.pkl.... Skipping...")
+    if os.path.exists(os.path.join(config_logging['explanation_dir'], f"explanations_{question_id}.pkl")):
+        print(f"Explanations for question {question_id} already exist... Skipping...")
+        return f"explanations_{question_id}.pkl"
+
+    print(f"Generating explanations for question {question_id}")
+
+    batch_size = params.get('inference_batch_size', max(1, params['no_of_responses_sampled_per_image'] // 2))
+    total = params['no_of_responses_sampled_per_image']
+    prompts = [sample['promptified_questions'][0]] * total
+    images = [raw_image] * total
+
+    def chunk(lst, n):
+        for i in range(0, len(lst), n):
+            yield lst[i:i+n]
+
+    offset = 0
+    for pbatch, ibatch in zip(chunk(prompts, batch_size), chunk(images, batch_size)):
+        # stopping_criteria = StoppingCriteriaList([CustomStoppingCriteria(processor.tokenizer, custom_eos_sequences)])
+        # inputs = processor(images=ibatch, text=pbatch, return_tensors="pt").to(torch_device, torch.float16)
+        inputs = processor(images=ibatch, text=pbatch, return_tensors="pt").to(torch_device)
+
+        outputs = model.generate(
+            input_ids=inputs['input_ids'],
+            pixel_values=inputs['pixel_values'],
+            do_sample=True,
+            temperature=params['temperature'],
+            top_p=params['top_p'],
+            num_beams=params['num_beams'],
+            max_new_tokens=params['max_new_tokens'],
+            use_cache=False,
+            return_dict_in_generate=True,
+            output_scores=True,
+            # stopping_criteria=stopping_criteria
+        )
+
+        for i in range(len(pbatch)):
+            generated_token_ids = outputs.sequences[i, inputs['input_ids'].shape[-1]:]
+            # take all the generated tokens, and not just the new ones
+            # generated_token_ids = outputs.sequences[i]
+            # decoded_outputs = processor.decode(generated_token_ids, skip_special_tokens=True).split('\n')[0]  I shouldnt split on newline as the model can generate newline and then generate the response, this is the reason why we are getting no response
+            decoded_outputs = processor.decode(generated_token_ids, skip_special_tokens=True)
+            transition_scores = model.compute_transition_scores(outputs.sequences, outputs.scores, normalize_logits=True)
+
+            sample[f'response_{offset + i}'] = {
+                'prompt': pbatch[i],
+                'transition_scores': transition_scores[i].cpu().numpy(),
+                'generated_token_ids': generated_token_ids.cpu().numpy(),
+                'decoded_outputs': decoded_outputs
+            }
+
+        offset += len(pbatch)
+        del inputs, outputs, generated_token_ids, decoded_outputs, transition_scores
+        torch.cuda.empty_cache()
+
+    save_results(sample, config_logging['explanation_dir'], f"explanations_{question_id}.pkl")
+    print(f'Explanations generated and saved to file f"explanations_{question_id}.pkl"')
+    return f"explanations_{question_id}.pkl"
+
+##### Below implementation is for generating explanations using Llava model with LLama 2 completions #####
+# def generate_explanations_MM(
+#     model_llava,
+#     processor_llava,
+#     sample,
+#     rank,
+#     params,
+#     config_logging
+# ):
+#     # 1) Set up device + half precision for Llava
+#     torch_device = f'cuda:{rank}' if torch.cuda.is_available() else 'cpu'
+#     model_llava = model_llava.half().to(torch_device)
+
+#     question_id = sample['question_ids'][0]
+#     question_text = sample['questions'][0]  # The raw question text
+#     raw_image = Image.open(sample['image_paths'][0])
+
+#     # 2) Early exit if explanations file already exists
+#     explanation_file = os.path.join(config_logging['explanation_dir'], f"explanations_{question_id}.pkl")
+#     if os.path.exists(explanation_file):
+#         print(f"Explanations for question {question_id} exist at {explanation_file} ... Skipping...")
 #         return f"explanations_{question_id}.pkl"
-    
-#     print(f"Generating explanations for question {question_id}")
-#     outputs = model.generate(
-#         input_ids=inputs['input_ids'],        # Text tokens
-#         pixel_values=inputs['pixel_values'],  # Image tokens
-#         do_sample=True,                      # Enable sampling
-#         temperature=params['temperature'],    # Sampling temperature
-#         top_p=params['top_p'],                # Top-p sampling
-#         num_beams=params['num_beams'],        # Beam search
+
+#     # 3) Build a batch of identical prompts/images for multiple sampling
+#     repeated_prompts = [sample['promptified_questions'][0]] * params['no_of_responses_sampled_per_image']
+#     repeated_images = [raw_image] * params['no_of_responses_sampled_per_image']
+
+#     # 4) Prepare inputs for Llava
+#     # from transformers import StoppingCriteriaList
+#     # stopping_criteria = StoppingCriteriaList([CustomStoppingCriteria(processor_llava.tokenizer, custom_eos_sequences)])
+
+#     inputs = processor_llava(
+#         images=repeated_images,
+#         text=repeated_prompts,
+#         return_tensors="pt"
+#     ).to(torch_device, torch.float16)
+
+#     print(f"Generating explanations (Llava) for question_id {question_id} ...")
+#     outputs = model_llava.generate(
+#         input_ids=inputs["input_ids"],
+#         pixel_values=inputs["pixel_values"],
+#         do_sample=True,
+#         temperature=params['temperature'],
+#         top_p=params['top_p'],
+#         num_beams=params['num_beams'],
 #         max_new_tokens=params['max_new_tokens'],
 #         use_cache=False,
 #         return_dict_in_generate=True,
 #         output_scores=True,
-#         stopping_criteria=stopping_criteria
+#         # stopping_criteria=stopping_criteria
 #     )
-    
-#     for i in range(params['no_of_responses_sampled_per_image']):
-#         # Process the generated output, remove the input token ids 
-#         generated_token_ids = outputs.sequences[i, inputs['input_ids'].shape[-1]:] 
-#         decoded_outputs = processor.decode(generated_token_ids.flatten(), skip_special_tokens=True)
-#         # only consider the portion of decoded outputs till the first newline character \n.
-#         decoded_outputs = decoded_outputs.split('\n')[0]
-        
-#         # Compute transition probabilities
-#         transition_scores = model.compute_transition_scores(outputs.sequences, outputs.scores, normalize_logits=True)
-#         # Store results in sample dict
-#         sample[f'response_{i}'] = {}
-#         sample[f'response_{i}']['prompt'] = prompt
-#         sample[f'response_{i}']['transition_scores'] = transition_scores.cpu().numpy()
-#         sample[f'response_{i}']['generated_token_ids'] = generated_token_ids.cpu().numpy()
-#         sample[f'response_{i}']['decoded_outputs'] = decoded_outputs
-        
-#         # Clear GPU memory after each step
-#         del generated_token_ids, decoded_outputs, transition_scores
-#         torch.cuda.empty_cache()
-        
-#     # save the sample to a file
+
+#     # 5) Decode each of the 20 responses
+#     #    NOTE: outputs.sequences is shape [batch_size, seq_len].
+#     #    We'll store them first in a temporary list.
+#     batch_size = params['no_of_responses_sampled_per_image']
+#     transition_scores = model_llava.compute_transition_scores(
+#         outputs.sequences, outputs.scores, normalize_logits=True
+#     )
+#     transition_scores = transition_scores.cpu().numpy()
+
+#     raw_decoded_responses = []
+#     for i in range(batch_size):
+#         # For each item i, slice out the newly generated tokens
+#         generated_token_ids = outputs.sequences[i, inputs['input_ids'].shape[-1]:]
+#         decoded = processor_llava.decode(generated_token_ids, skip_special_tokens=True)
+#         # Truncate to first newline
+#         # decoded = decoded.split('\n')[0].strip()
+#         decoded = decoded.strip().split('\n')[0]
+#         raw_decoded_responses.append(decoded)
+
+#     # 6) Identify which are "short" => fewer than 4 words
+#     #    We'll do a single batch call to Llama2 for these short answers.
+#     short_indices = []
+#     short_answers = []
+#     for i, resp in enumerate(raw_decoded_responses):
+#         word_count = len(resp.split())
+#         if 0 < word_count < 4:
+#             short_indices.append(i)
+#             short_answers.append(resp)
+
+#     # 7) If any short answers exist, run Llama2 in batch
+#     expansions = [None] * batch_size  # Will hold final expansions for short answers
+#     raw_llama2_responses = [None] * batch_size  # Will hold raw Llama2 responses for short answers
+#     for i in range(batch_size):
+#         # Default to None
+#         expansions[i] = None
+#         raw_llama2_responses[i] = None
+
+#     if len(short_answers) > 0:
+#         # Build a prompt for each short answer
+#         llama2_prompts = []
+#         for short_ans in short_answers:
+#             prompt_for_llama2 = f"""
+#             QUESTION: What animal is shown?
+#             MODEL: dog
+#             LLAMA2: The animal shown is a dog.
+#             QUESTION: What is the girl eating?
+#             MODEL: apple
+#             LLAMA2: The girl is eating an apple.
+#             QUESTION: {question_text}
+#             MODEL: {short_ans}
+#             LLAMA2:
+#             """
+#             llama2_prompts.append(prompt_for_llama2)
+
+#         # Send them in a batch to Llama2
+#         torch_device_llama2 = f"cuda:{rank}"  # or f"cuda:{rank}" if you prefer
+#         model_llama2.to(torch_device_llama2)
+
+#         tokenized_llama2 = tokenizer_llama2(
+#             llama2_prompts, 
+#             return_tensors="pt", 
+#             padding=True,
+#             truncation=True
+#         ).to(torch_device_llama2)
+
+#         stopping_criteria_llama2 = StoppingCriteriaList([
+#             CustomStoppingCriteria(tokenizer_llama2, custom_eos_sequences)
+#         ])
+
+#         with torch.no_grad():
+#             outputs_llama2 = model_llama2.generate(
+#                 **tokenized_llama2,
+#                 max_new_tokens=50,
+#                 temperature=0.1,
+#                 num_beams=2,
+#                 top_p=0.9,
+#                 stopping_criteria=stopping_criteria_llama2
+#             )
+
+#         # Decode each expanded answer
+#         # NOTE: outputs_llama2 is shape [batch_size_of_short_answers, seq_len].
+#         # We'll map them back to the correct indices.
+#         for idx_in_batch, i_response in enumerate(short_indices):
+#             generated_ids = outputs_llama2[idx_in_batch, tokenized_llama2['input_ids'].shape[-1]:]
+#             expanded_text = tokenizer_llama2.decode(generated_ids, skip_special_tokens=True)
+#             # Truncate to the first newline (if present)
+#             # expanded_text = expanded_text.split('\n')[0].strip()
+#             expanded_text = expanded_text.strip().split('\n')[0]
+#             expansions[i_response] = expanded_text
+#             raw_llama2_responses[i_response] = expanded_text
+
+#     # 8) Now expansions[] holds the final text for all 20 responses
+#     #    Let's store them in sample.
+#     for i in range(batch_size):
+#         sample[f"response_{i}"] = {
+#             "prompt": sample['promptified_questions'][0],
+#             "transition_scores": transition_scores[i],
+#             "decoded_outputs": expansions[i] if expansions[i] is not None else raw_decoded_responses[i],
+#             "raw_decoded_outputs_llava": raw_decoded_responses[i],
+#             "raw_decoded_outputs_llama2": raw_llama2_responses[i]
+#         }
+
+#     # 9) Save to disk
 #     save_results(sample, config_logging['explanation_dir'], f"explanations_{question_id}.pkl")
-#     print(f'Explanations generated and saved to file f"explanations_{question_id}.pkl"')
-#     # return the file name to which the results are saved
+#     print(f'Explanations (with Llama2 expansions) saved => explanations_{question_id}.pkl')
+
+#     # 10) Cleanup
+#     del inputs, outputs
+#     torch.cuda.empty_cache()
 #     return f"explanations_{question_id}.pkl"
-
-##### Below implementation is for generating explanations using Llava model with LLama 2 completions #####
-def generate_explanations_MM(
-    model_llava,
-    processor_llava,
-    sample,
-    rank,
-    params,
-    config_logging
-):
-    # 1) Set up device + half precision for Llava
-    torch_device = f'cuda:{rank}' if torch.cuda.is_available() else 'cpu'
-    model_llava = model_llava.half().to(torch_device)
-
-    question_id = sample['question_ids'][0]
-    question_text = sample['questions'][0]  # The raw question text
-    raw_image = Image.open(sample['image_paths'][0])
-
-    # 2) Early exit if explanations file already exists
-    explanation_file = os.path.join(config_logging['explanation_dir'], f"explanations_{question_id}.pkl")
-    if os.path.exists(explanation_file):
-        print(f"Explanations for question {question_id} exist at {explanation_file} ... Skipping...")
-        return f"explanations_{question_id}.pkl"
-
-    # 3) Build a batch of identical prompts/images for multiple sampling
-    repeated_prompts = [sample['promptified_questions'][0]] * params['no_of_responses_sampled_per_image']
-    repeated_images = [raw_image] * params['no_of_responses_sampled_per_image']
-
-    # 4) Prepare inputs for Llava
-    # from transformers import StoppingCriteriaList
-    # stopping_criteria = StoppingCriteriaList([CustomStoppingCriteria(processor_llava.tokenizer, custom_eos_sequences)])
-
-    inputs = processor_llava(
-        images=repeated_images,
-        text=repeated_prompts,
-        return_tensors="pt"
-    ).to(torch_device, torch.float16)
-
-    print(f"Generating explanations (Llava) for question_id {question_id} ...")
-    outputs = model_llava.generate(
-        input_ids=inputs["input_ids"],
-        pixel_values=inputs["pixel_values"],
-        do_sample=True,
-        temperature=params['temperature'],
-        top_p=params['top_p'],
-        num_beams=params['num_beams'],
-        max_new_tokens=params['max_new_tokens'],
-        use_cache=False,
-        return_dict_in_generate=True,
-        output_scores=True,
-        # stopping_criteria=stopping_criteria
-    )
-
-    # 5) Decode each of the 20 responses
-    #    NOTE: outputs.sequences is shape [batch_size, seq_len].
-    #    We'll store them first in a temporary list.
-    batch_size = params['no_of_responses_sampled_per_image']
-    transition_scores = model_llava.compute_transition_scores(
-        outputs.sequences, outputs.scores, normalize_logits=True
-    )
-    transition_scores = transition_scores.cpu().numpy()
-
-    raw_decoded_responses = []
-    for i in range(batch_size):
-        # For each item i, slice out the newly generated tokens
-        generated_token_ids = outputs.sequences[i, inputs['input_ids'].shape[-1]:]
-        decoded = processor_llava.decode(generated_token_ids, skip_special_tokens=True)
-        # Truncate to first newline
-        decoded = decoded.split('\n')[0].strip()
-        raw_decoded_responses.append(decoded)
-
-    # 6) Identify which are "short" => fewer than 4 words
-    #    We'll do a single batch call to Llama2 for these short answers.
-    short_indices = []
-    short_answers = []
-    for i, resp in enumerate(raw_decoded_responses):
-        word_count = len(resp.split())
-        if 0 < word_count < 4:
-            short_indices.append(i)
-            short_answers.append(resp)
-
-    # 7) If any short answers exist, run Llama2 in batch
-    expansions = [None] * batch_size  # Will hold final expansions for short answers
-    raw_llama2_responses = [None] * batch_size  # Will hold raw Llama2 responses for short answers
-    for i in range(batch_size):
-        # Default to None
-        expansions[i] = None
-        raw_llama2_responses[i] = None
-
-    if len(short_answers) > 0:
-        # Build a prompt for each short answer
-        llama2_prompts = []
-        for short_ans in short_answers:
-            prompt_for_llama2 = f"""
-            QUESTION: What animal is shown?
-            MODEL: dog
-            LLAMA2: The animal shown is a dog.
-            QUESTION: What is the girl eating?
-            MODEL: apple
-            LLAMA2: The girl is eating an apple.
-            QUESTION: {question_text}
-            MODEL: {short_ans}
-            LLAMA2:
-            """
-            llama2_prompts.append(prompt_for_llama2)
-
-        # Send them in a batch to Llama2
-        torch_device_llama2 = f"cuda:{rank}"  # or f"cuda:{rank}" if you prefer
-        model_llama2.to(torch_device_llama2)
-
-        tokenized_llama2 = tokenizer_llama2(
-            llama2_prompts, 
-            return_tensors="pt", 
-            padding=True,
-            truncation=True
-        ).to(torch_device_llama2)
-
-        stopping_criteria_llama2 = StoppingCriteriaList([
-            CustomStoppingCriteria(tokenizer_llama2, custom_eos_sequences)
-        ])
-
-        with torch.no_grad():
-            outputs_llama2 = model_llama2.generate(
-                **tokenized_llama2,
-                max_new_tokens=50,
-                temperature=0.1,
-                num_beams=2,
-                top_p=0.9,
-                stopping_criteria=stopping_criteria_llama2
-            )
-
-        # Decode each expanded answer
-        # NOTE: outputs_llama2 is shape [batch_size_of_short_answers, seq_len].
-        # We'll map them back to the correct indices.
-        for idx_in_batch, i_response in enumerate(short_indices):
-            generated_ids = outputs_llama2[idx_in_batch, tokenized_llama2['input_ids'].shape[-1]:]
-            expanded_text = tokenizer_llama2.decode(generated_ids, skip_special_tokens=True)
-            # Truncate to the first newline (if present)
-            expanded_text = expanded_text.split('\n')[0].strip()
-            expansions[i_response] = expanded_text
-            raw_llama2_responses[i_response] = expanded_text
-
-    # 8) Now expansions[] holds the final text for all 20 responses
-    #    Let's store them in sample.
-    for i in range(batch_size):
-        sample[f"response_{i}"] = {
-            "prompt": sample['promptified_questions'][0],
-            "transition_scores": transition_scores[i],
-            "decoded_outputs": expansions[i] if expansions[i] is not None else raw_decoded_responses[i],
-            "raw_decoded_outputs_llava": raw_decoded_responses[i],
-            "raw_decoded_outputs_llama2": raw_llama2_responses[i]
-        }
-
-    # 9) Save to disk
-    save_results(sample, config_logging['explanation_dir'], f"explanations_{question_id}.pkl")
-    print(f'Explanations (with Llama2 expansions) saved => explanations_{question_id}.pkl')
-
-    # 10) Cleanup
-    del inputs, outputs
-    torch.cuda.empty_cache()
-    return f"explanations_{question_id}.pkl"
 
 
     
