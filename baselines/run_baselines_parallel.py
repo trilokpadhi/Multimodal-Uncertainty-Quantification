@@ -112,8 +112,13 @@ def get_accuracy(full_answers, question, responses, tokenizer, model, device):
     """
     correct = 0
     for response in responses:
-        premise = f"{question} {full_answers}"
-        hypothesis = f"{question} {response}"
+        # premise = f"{question} {full_answers}"
+        # hypothesis = f"{question} {response}"
+        # premise = f"{question} {response}"
+        # hypothesis = f"{question} {full_answers}"
+        # below is premise and hypothesis with only response and full answer, without question, which is working better
+        premise = f'{response}'
+        hypothesis = f'{full_answers}'
         
         inputs = tokenizer.encode_plus(premise, hypothesis, return_tensors='pt', truncation=True)
         inputs = {k: v.to(device) for k, v in inputs.items()}  # Move inputs to device
@@ -220,13 +225,17 @@ def process_file(file_path, explanation_dir, deberta_model_name, gpu_id):
                 if 'response' in key:
                     metadata = explanation_metadata[key]
                     # Calculate log probability
-                    log_prob_sentence = np.sum(metadata.get('transition_scores', []))
+                    # transition_scores = [score for score in metadata.get('transition_scores', []) if not np.isinf(score)]
+                    transition_scores = [score for score in metadata.get('transition_scores', []) if not np.isinf(score).any()]
+                    # transition_scores = [score for score in expl['response_0']['transition_scores'] if not np.isinf(score)]
+                    log_prob_sentence = np.sum(transition_scores)
                     log_probs.append(log_prob_sentence)
 
                     # Extract explanation from decoded_outputs
                     try:
-                        response_json = get_json_from_response(metadata['decoded_outputs'])
-                        explanation = response_json['explanation']
+                        # response_json = get_json_from_response(metadata['decoded_outputs'])
+                        # explanation = response_json['explanation']
+                        explanation = metadata['decoded_outputs']
                         explanations.append(explanation)
                         explanation_with_log_probs[explanation] = log_prob_sentence
                     except Exception as e:
@@ -240,7 +249,8 @@ def process_file(file_path, explanation_dir, deberta_model_name, gpu_id):
             rogue_l_score = get_lexical_similarity(explanations, scorer)
             semantic_entropy, num_clusters = get_semantic_entropy(question, explanation_with_log_probs, tokenizer, model, device)
             explanation_list = list(explanation_with_log_probs.keys())
-            full_answers = explanation_metadata.get('full_answers', [''])[0]
+            # full_answers = explanation_metadata.get('full_answers', [''])[0]
+            full_answers = explanation_metadata.get('answers', [''])[0] # for slake dataset
             accuracy = get_accuracy(full_answers, question, explanation_list, tokenizer, model, device)
 
             # Compile uncertainty scores
@@ -260,8 +270,14 @@ def process_file(file_path, explanation_dir, deberta_model_name, gpu_id):
 
 def main():
     # Define directories
-    explanation_dir = '/mnt/myebsvolume/home/ubuntu/Multimodal-Uncertainty-Quantification/runs/llava_gqa_yes_gsam_grounding_random_10000/explanations'
-    uncertainty_dir = '/home/ec2-user/Multimodal-Uncertainty-Quantification/runs/uncertainty'
+    
+    ######### FOR SLAKE DATASET ########## 
+    explanation_dir = '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/explanations'
+    uncertainty_dir = '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/uncertainty_with_gr_biomedclip'
+    
+    ########## FOR VQA DATASET ##########
+    # explanation_dir = '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/explanations'
+    # uncertainty_dir = '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/uncertainty'
     deberta_model_name = 'microsoft/deberta-base-mnli'
 
     # List all files to process
@@ -271,8 +287,8 @@ def main():
     responses = {}
 
     # Define number of worker processes and assign GPUs
-    num_cpus = 6
-    num_gpus = 8
+    num_cpus = 4
+    num_gpus = 4 
     workers = min(num_cpus, num_gpus)  # Typically, align workers with available CPUs and GPUs
 
     # Assign GPUs to workers (cycle through available GPUs if workers < GPUs)
@@ -299,6 +315,15 @@ def main():
     # Make the uncertainty directory if it does not exist
     if not os.path.exists(uncertainty_dir):
         os.makedirs(uncertainty_dir)
+
+    # # Serial processing for debugging
+    # for file in tqdm(files, desc='Processing files serially'):
+    #     try:
+    #         question_id, uncertainty_scores_baseline = process_file(file, explanation_dir, deberta_model_name, 0)
+    #         if question_id is not None:
+    #             responses[question_id] = uncertainty_scores_baseline
+    #     except Exception as e:
+    #         print(f"Error processing file {file}: {e}")
 
     # Save the responses in a pickle file
     output_path = os.path.join(uncertainty_dir, 'uncertainty_scores_baseline.pkl')

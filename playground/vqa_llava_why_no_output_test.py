@@ -5,7 +5,8 @@ from tqdm import tqdm
 
 
 # Initialize model and processor
-model_id_llava = "llava-hf/llava-1.5-7b-hf"
+# model_id_llava = "llava-hf/llava-1.5-7b-hf"
+model_id_llava = "microsoft/llava-med-v1.5-mistral-7b"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model_llava = LlavaForConditionalGeneration.from_pretrained(model_id_llava).to(device)
 processor_llava = AutoProcessor.from_pretrained(model_id_llava)

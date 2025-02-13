@@ -1,0 +1,40 @@
+# config.yaml
+samples: 20
+triple_extraction: false
+data:
+  dataset: "slake"
+  root_dir: "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/datasets_/Slake1.0/"
+  image_dir: "imgs/"
+  samples: 2000
+mm_model:
+  model_path: 'microsoft/llava-med-v1.5-mistral-7b'
+  model_base: 'mistralai/Mistral-7B-Instruct-v0.2'
+  model_name: 'llava-med-v1.5-mistral-7b'
+  temperature: 0.5
+  top_p: 1 
+  num_beams: 1
+  max_new_tokens: 512
+  no_of_responses_sampled_per_image: 20
+  inference_batch_size: 20 # this is the batch size for the model inference of llava
+
+grounding:
+  detector_id: "IDEA-Research/grounding-dino-tiny"
+  segmenter_id: "facebook/sam-vit-base"
+  threshold: 0.01
+  llama32_model_path: "meta-llama/Llama-3.2-11B-Vision-Instruct"
+  qwen_vl_model_path: "AdaptLLM/biomed-Qwen2-VL-2B-Instruct"
+
+  # dino_model_path: "path/to/dino/model"
+  # top_k: 5
+
+uncertainty:
+  method: "log_likelihood"
+  get_uncertainty: true
+
+logging:
+  explanation_dir: "runs_slake/llava_med_slake/explanations"
+  grounding_dir: "runs_slake/llava_med_slake/grounding"
+  grounding_dir_with_llama32: "runs_slake/llava_med_slake/grounding_with_llama32"
+  grounding_dir_with_llama32_90B: "runs_slake/llava_med_slake/grounding_with_llama32_90b"
+  grounding_dir_with_qwen_vl: "runs_slake/llava_med_slake/grounding_with_qwen_vl"
+  grounding_dir_with_biomedclip: "runs_slake/llava_med_slake/grounding_with_biomedclip"

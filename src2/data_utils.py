@@ -5,6 +5,7 @@ import os
 from PIL import Image
 import pickle
 from torch.utils.data.distributed import DistributedSampler
+from datasets import load_dataset, load_from_disk
 
 # dataloader for GQA
 def get_gqa_dataloader(config, rank, world_size):
@@ -77,9 +78,6 @@ class GQADataset:
         """
         return prompt
     
-
-
-    
         
 # write a collate function to collate the samples
 def gqa_collate_fn(batch):
@@ -146,7 +144,8 @@ class VQADataset(Dataset):
         # the filename is of the format COCO_train2014_000000000025.jpg
         # image_id = annotation_entry['image_id'] 
         image_id = f'COCO_train2014_{annotation_entry["image_id"]:012d}'
-        answer = annotation_entry['answers'][0]['answer']  # Assuming a single answer is used
+        # answer = annotation_entry['answers'][0]['answer']  # Assuming a single answer is used
+        answer = annotation_entry['most_common_answer']
         all_answers = [ans['answer'] for ans in annotation_entry['answers']]
 
         promptified_question = self.promptify(question)
@@ -155,7 +154,7 @@ class VQADataset(Dataset):
             'question_id': question_id,
             'question': question,
             'promptified_question': promptified_question,
-            'answer': answer,
+            'answer': answer, # most common answer
             'all_answers': all_answers,
             'image_id': image_id,
             'image_path': os.path.join(self.image_data_root, f'{image_id}.jpg'),
@@ -220,43 +219,239 @@ def get_vqa_dataloader(config, rank, world_size):
     return DataLoader(dataset, batch_size=1, collate_fn=vqa_collate_fn, sampler=sampler)
     
     
+class SLAKEDataset(Dataset):
+    def __init__(self, config):
+        """
+        config is expected to contain:
+          - 'split' (str): "train", "validation", or "test"
+          - 'root_dir' (str): local path to the SLAKE images directory
+              e.g. '/mnt/my_ebs_volume/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/SLAKE/Slake1.0/imgs'
+                  
+        Example     
+        config = {
+        'split': 'test',
+        'root_dir': '/mnt/my_ebs_volume/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/SLAKE/Slake1.0',
+        'image_dir': 'imgs',
+        'question_file': 'filtered_slake_train',
+        # potentially other fields
+        }
+        The dataset was filtered by using 'what' questions, using the train split.
+        """
+        # self.split = config.get('split', 'train')  # e.g. 'train', 'validation', 'test'
+        self.root_dir = config.get('root_dir', './SLAKE/Slake1.0/')
+        self.img_dir = os.path.join(self.root_dir, config.get('images_dir', 'imgs'))
+        # Load the entire SLAKE dataset from Hugging Face
+        # This downloads it if not cached locally
+        # dataset = load_dataset("BoKelvin/SLAKE")
+        dataset = load_from_disk(os.path.join(self.root_dir, config.get('question_file', 'filtered_slake_train')))
+        
+        # # Select the split
+        # if self.split not in dataset:
+        #     raise ValueError(f"Invalid split '{self.split}'. Must be one of: {list(dataset.keys())}")
+        
+        # self.data = dataset[self.split]  # e.g. dataset['train']
+        self.data = dataset
+        print(f"SLAKE loaded with {len(self.data)} samples.")
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        sample = self.data[idx]
+        """
+        The sample typically has keys:
+          'img_name', 'location', 'answer', 'modality', 'base_type',
+          'answer_type', 'question', 'qid', 'content_type', 'triple',
+          'img_id', 'q_lang'
+        Example:
+          {
+            'img_name': 'xmlab1/source.jpg',
+            'location': 'Abdomen',
+            'answer': 'MRI',
+            'modality': 'MRI',
+            'base_type': 'vqa',
+            'answer_type': 'OPEN',
+            'question': 'What modality is used to take this image?',
+            'qid': 0,
+            'content_type': 'Modality',
+            'triple': ['vhead', '_', '_'],
+            'img_id': 1,
+            'q_lang': 'en'
+          }
+        """
+
+        # Create a prompt for the question if desired
+        promptified_question = self.promptify(sample['question'])
+
+        # Build the return dictionary
+        item = {
+            'img_name': sample['img_name'],
+            'location': sample['location'],
+            'answer': sample['answer'],
+            'modality': sample['modality'],
+            'base_type': sample['base_type'],
+            'answer_type': sample['answer_type'],
+            'question': sample['question'],
+            'qid': sample['qid'],
+            'content_type': sample['content_type'],
+            'triple': sample['triple'],
+            'img_id': sample['img_id'],
+            'q_lang': sample['q_lang'],
+            'promptified_question': promptified_question,
+            # Construct the path to the local image
+            'image_path': os.path.join(self.root_dir, self.img_dir, sample['img_name'])
+        }
+        return item
+
+    def promptify(self, question):
+        """
+        Optionally create a 'few-shot' prompt or simply return the question.
+        You can customize this as needed.
+        """
+        few_shot_examples = """Question: What modality is used to take this image?
+        Answer: The modality used to take this image is MRI.
+        Question: Question: Which part of the body does this image belong to?
+        Answer: This image belongs to the abdomen.
+        Question: What is the main organ in the image?
+        Answer: The main organ in the image is Lung and Spinal Cord.
+        """
+        # Combine with user question
+        prompt = (
+            f"{few_shot_examples}\n"
+            f"Question: {question}\n"
+            f" <image> \n"
+            f"Answer:"
+        )
+        
+        return prompt
+    
+def slake_collate_fn(batch):
+    img_names = []
+    locations = []
+    answers = []
+    modalities = []
+    base_types = []
+    answer_types = []
+    questions = []
+    qids = []
+    content_types = []
+    triples = []
+    img_ids = []
+    q_langs = []
+    promptified_questions = []
+    image_paths = []
+
+    for sample in batch:
+        img_names.append(sample['img_name'])
+        locations.append(sample['location'])
+        answers.append(sample['answer'])
+        modalities.append(sample['modality'])
+        base_types.append(sample['base_type'])
+        answer_types.append(sample['answer_type'])
+        questions.append(sample['question'])
+        qids.append(sample['qid'])
+        content_types.append(sample['content_type'])
+        triples.append(sample['triple'])
+        img_ids.append(sample['img_id'])
+        q_langs.append(sample['q_lang'])
+        promptified_questions.append(sample['promptified_question'])
+        image_paths.append(sample['image_path'])
+
+    return {
+        'img_names': img_names,
+        'locations': locations,
+        'answers': answers,
+        'modalities': modalities,
+        'base_types': base_types,
+        'answer_types': answer_types,
+        'questions': questions,
+        'qids': qids,
+        'content_types': content_types,
+        'triples': triples,
+        'img_ids': img_ids,
+        'q_langs': q_langs,
+        'promptified_questions': promptified_questions,
+        'image_paths': image_paths,
+    }
+    
+def get_slake_dataloader(config, rank, world_size):
+    """
+    Creates a SLAKE dataloader for the specified split,
+    using a DistributedSampler if in distributed mode.
+    
+    config should contain keys like:
+      - 'split': 'train' or 'validation' or 'test'
+      - 'root_dir': path to local SLAKE images
+      - anything else needed for your environment
+    """
+    dataset = SLAKEDataset(config)
+
+    sampler = DistributedSampler(
+        dataset,
+        num_replicas=world_size,
+        rank=rank,
+        shuffle=False
+    )
+
+    dataloader = DataLoader(
+        dataset,
+        batch_size=1,                # or whatever you prefer
+        sampler=sampler,
+        collate_fn=slake_collate_fn  # from above
+    )
+    return dataloader
+
 if __name__ == "__main__":
-    # root = '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/'
-    # config = {'dataset_type': 'json', 'root_dir': '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/', 'image_dir': 'images', 'question_file': 'questions1.2/train_all_questions/train_all_questions_0_random_filtered_100.json'}
-    '''
-    for GQA dataset
-    '''
-    # config = {'dataset_type': 'json', 'root_dir': '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/', 'image_dir': 'images', 'question_file': 'questions1.2/train_all_questions/train_all_questions_0_true_filtered_100.json'}
-    # dataset_type = 'json'
-    # dataloader = get_dataloader(config, 0, 1)
-    # for idx, sample in enumerate(dataloader):
-    #     print(f"Sample {idx}: {sample}")
-    #     if idx >= 5:
-    #         break
-    '''
-    for VQA dataset
-    '''
+#     # root = '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/'
+#     # config = {'dataset_type': 'json', 'root_dir': '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/', 'image_dir': 'images', 'question_file': 'questions1.2/train_all_questions/train_all_questions_0_random_filtered_100.json'}
+#     '''
+#     for GQA dataset
+#     '''
+#     # config = {'dataset_type': 'json', 'root_dir': '/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/GQA/', 'image_dir': 'images', 'question_file': 'questions1.2/train_all_questions/train_all_questions_0_true_filtered_100.json'}
+#     # dataset_type = 'json'
+#     # dataloader = get_dataloader(config, 0, 1)
+#     # for idx, sample in enumerate(dataloader):
+#     #     print(f"Sample {idx}: {sample}")
+#     #     if idx >= 5:
+#     #         break
+#     '''
+#     for VQA dataset
+#     '''
+#     config = {
+#     'dataset_type': 'json',
+#     'root_dir': '/home/ubuntu/trilok/Multimodal-Uncertainty-Quantification/dataset/VQA/data',
+#     'image_dir': 'train2014',
+#     'annotation_file': 'annotations/v2_mscoco_train2014_annotations.json',
+#     'question_file': 'questions/v2_OpenEnded_mscoco_train2014_questions_filtered_1000.json',
+# }
+
+#     rank = 0  # Current GPU rank
+#     world_size = 1  # Total number of GPUs
+
+#     vqa_dataloader = get_vqa_dataloader(config, rank, world_size)
+#     # Example loop to process the VQA dataloader
+#     for batch in vqa_dataloader:
+#         print("Batch keys:", batch.keys())
+#         print("Questions:", batch['questions'])
+#         print("Answers:", batch['answers'])
+#         print("Image paths:", batch['image_paths'])
+        
+#         # check if the image paths are valid
+#         for image_path in batch['image_paths']:
+#             assert os.path.exists(image_path), f"Invalid image path: {image_path}"
+#         break  # Remove this for processing the entire dataset
+    """
+    for SLAKE dataset
+    """
     config = {
-    'dataset_type': 'json',
-    'root_dir': '/home/ubuntu/trilok/Multimodal-Uncertainty-Quantification/dataset/VQA/data',
-    'image_dir': 'train2014',
-    'annotation_file': 'annotations/v2_mscoco_train2014_annotations.json',
-    'question_file': 'questions/v2_OpenEnded_mscoco_train2014_questions_filtered_1000.json',
-}
+        'split': 'test',
+        'root_dir': '/mnt/my_ebs_volume/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/SLAKE/Slake1.0',
+        'image_dir': 'imgs',
+        'question_file': 'filtered_slake_train',
+        # potentially other fields
+    }
+    rank, world_size = 0, 1  # Single GPU or CPU test
 
-    rank = 0  # Current GPU rank
-    world_size = 1  # Total number of GPUs
-
-    vqa_dataloader = get_vqa_dataloader(config, rank, world_size)
-    # Example loop to process the VQA dataloader
-    for batch in vqa_dataloader:
-        print("Batch keys:", batch.keys())
-        print("Questions:", batch['questions'])
-        print("Answers:", batch['answers'])
-        print("Image paths:", batch['image_paths'])
-        
-        # check if the image paths are valid
-        for image_path in batch['image_paths']:
-            assert os.path.exists(image_path), f"Invalid image path: {image_path}"
-        break  # Remove this for processing the entire dataset
-        
+    loader = get_slake_dataloader(config, rank, world_size)
+    for batch_idx, batch in enumerate(loader):
+        print(f"Batch {batch_idx}:\n", batch)
