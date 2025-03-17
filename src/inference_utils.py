@@ -446,7 +446,7 @@ def generate_grounded_segmentation(
     sample_explanations_file_path = os.path.join(config_logging['explanation_dir'], sample_explanations_file_name)
     sample_explanations = pickle.load(open(sample_explanations_file_path, 'rb'))
     question_id = sample_explanations['question_ids'][0]
-    sample_grounding_file_path = os.path.join(config_logging['grounding_dir'], f"grounding_{question_id}.pkl")
+    sample_grounding_file_path = os.path.join(config_logging['grounding_dir_with_gdsam'], f"grounding_{question_id}.pkl")
     # check if the grounding file already exists
     if os.path.exists(sample_grounding_file_path):
         print(f"Grounding scores for question {question_id} already exist at {sample_grounding_file_path}. Skipping...")

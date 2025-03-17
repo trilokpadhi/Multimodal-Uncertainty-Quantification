@@ -387,7 +387,7 @@ def get_baseline_results(explanation_dir, out_csv, max_files=None):
 # STEP 2 (ACCURACY) WITH GRANULAR PROGRESS
 ##############################################################################
 
-def worker_accuracy(files_subset, gpu_id, explanation_dir, progress_queue):
+def worker_accuracy(files_subset, gpu_id, explanation_dir, progress_queue, add_question_for_accuracy_calculation):
     """
     Each worker:
       - Loads DeBERTa on GPU gpu_id
@@ -411,6 +411,7 @@ def worker_accuracy(files_subset, gpu_id, explanation_dir, progress_queue):
             data= pickle.load(f)
 
         question_id = file.split('_')[1].split('.')[0]
+        question = data['questions'][0]
         gt_answer= data['answers'][0]
 
         responses=[]
@@ -428,8 +429,13 @@ def worker_accuracy(files_subset, gpu_id, explanation_dir, progress_queue):
             # Batched inference
             preds = []
             for chunk in chunkify(responses, 16):
-                premises = chunk
-                hyps     = [gt_answer]*len(chunk)
+                if add_question_for_accuracy_calculation:
+                    premises = [f"{question} {resp}" for resp in chunk]
+                    hyps     = [f"{question} {gt_answer}"]*len(chunk)
+                else:
+                    premises = chunk
+                    hyps     = [gt_answer]*len(chunk)
+                
                 inp = tokenizer(premises, hyps, return_tensors='pt', truncation=True, padding=True)
                 inp = {k:v.to(device_str) for k,v in inp.items()}
                 with torch.no_grad():
@@ -447,7 +453,7 @@ def worker_accuracy(files_subset, gpu_id, explanation_dir, progress_queue):
 
     return results
 
-def get_accuracy(explanation_dir, out_csv, max_files=None):
+def get_accuracy(explanation_dir, out_csv, max_files=None, add_question_for_accuracy_calculation=False):
     if os.path.isfile(out_csv):
         print(f"[INFO] Accuracy results already exist => {out_csv}")
         return pd.read_csv(out_csv)
@@ -478,7 +484,7 @@ def get_accuracy(explanation_dir, out_csv, max_files=None):
     results = []
     with ProcessPoolExecutor(max_workers=len(dist)) as executor:
         for (gpu_id, subset) in dist:
-            fut = executor.submit(worker_accuracy, subset, gpu_id, explanation_dir, progress_queue)
+            fut = executor.submit(worker_accuracy, subset, gpu_id, explanation_dir, progress_queue, add_question_for_accuracy_calculation)
             futures.append(fut)
 
         # Single global progress bar
@@ -510,52 +516,40 @@ def get_accuracy(explanation_dir, out_csv, max_files=None):
 # STEP 3: GET GROUNDING
 ##############################################################################
 
-def load_grounding_dict(grounding_folder, score_key='biomedclip_score'):
-    out={}
-    out_processed={}
+def load_grounding_dict(grounding_folder, score_key='biomedclip_score', score_type='binary'):
+    out = {}
+    out_processed = {}
     if not os.path.isdir(grounding_folder):
         print(f"[WARNING] Missing folder: {grounding_folder}")
-        return out
+        return out, out_processed
 
-    pkls= [p for p in os.listdir(grounding_folder) if p.endswith('.pkl')]
+    pkls = [p for p in os.listdir(grounding_folder) if p.endswith('.pkl')]
     for pklf in pkls:
-        fpath=os.path.join(grounding_folder, pklf)
-        if os.path.getsize(fpath)==0:
+        fpath = os.path.join(grounding_folder, pklf)
+        if os.path.getsize(fpath) == 0:
             continue
-        with open(fpath,'rb') as f:
-            data= pickle.load(f)
-        qid = str(data.get('question_id', data.get('qids', [None])[0]))
-        # val= data.get(score_key, None)
-        val_list= []
+        with open(fpath, 'rb') as f:
+            data = pickle.load(f)
+        qid = int(data.get('question_ids', None)[0])
+        val_list = []
         for key in data.keys():
             if 'response' in key:
-                # score = data[key].get(score_key, None)
-                # if "yes" in score.lower():
-                #     val_list.append("yes")
-                # else:
-                #     val_list.append(score)
-                # if val:
-                #     break
                 val_list.append(data[key].get(score_key, "No"))
-        # count how many "yes" responses in val_list
-        # val = val_list.count("yes") / len(val_list)
-        
+
         if qid:
-            # # out[qid]= val
-            # out[qid]= {}
-            # out[qid]['score'] = val
-            # out[qid]['responses'] = val_list
-            out[qid]= val_list
-            # if 'clip' not in score_key, then we need to process the values
-            if 'clip' not in score_key:
-                # out_processed[qid]= val_list
+            out[qid] = val_list
+            if score_type == 'binary':
                 temp = ['yes' if "yes" in v.lower() else 'no' for v in val_list]
-                out_processed[qid]= temp
+                out_processed[qid] = temp
+            elif score_type == 'continuous':
+                temp = [float(v) if isinstance(v, (int, float)) else 0.0 for v in val_list]
+                out_processed[qid] = temp
             else:
-                out_processed[qid]= val_list
+                print(f"[WARNING] Unknown score_type: {score_type}")
+                out_processed[qid] = val_list
     return out, out_processed
 
-def get_grounding(biomedclip_dir, llama32_11b_dir, llama32_70b_dir, qwen_vl_dir, out_csv):
+def get_grounding(llama32_11b_dir, qwen_vl_dir, qwen_vl_25_dir, out_csv):
     """
     Grounding is typically quick, so we do it in a single process (CPU).
     """
@@ -563,34 +557,41 @@ def get_grounding(biomedclip_dir, llama32_11b_dir, llama32_70b_dir, qwen_vl_dir,
         print(f"[INFO] Grounding results already exist => {out_csv}")
         return pd.read_csv(out_csv)
 
-    dict_biomedclip, dict_biomedclip_processed   = load_grounding_dict(biomedclip_dir,   score_key='biomedclip_score')
+    # dict_biomedclip, dict_biomedclip_processed   = load_grounding_dict(biomedclip_dir,   score_key='biomedclip_score')
     dict_llama32_11b, dict_llama32_11b_processed  = load_grounding_dict(llama32_11b_dir,  score_key='llama_32_response')
-    dict_llama32_70b, dict_llama32_70b_processed  = load_grounding_dict(llama32_70b_dir,  score_key='llama_32_response')
-    dict_qwen_vl, dict_qwen_vl_processed    = load_grounding_dict(qwen_vl_dir,      score_key='llama_32_response')
+    # dict_llama32_70b, dict_llama32_70b_processed  = load_grounding_dict(llama32_70b_dir,  score_key='llama_32_response')
+    dict_qwen_vl, dict_qwen_vl_processed    = load_grounding_dict(qwen_vl_dir, score_key='qwen_vl_response')
+    dict_qwen_vl_25, dict_qwen_vl_25_processed = load_grounding_dict(qwen_vl_25_dir, score_key='qwen_vl_response')
     
     
 
-    all_qids= set(dict_biomedclip.keys()).union(dict_llama32_11b.keys(), dict_llama32_70b.keys(), dict_qwen_vl.keys())
+    # all_qids= set(dict_biomedclip.keys()).union(dict_llama32_11b.keys(), dict_llama32_70b.keys(), dict_qwen_vl.keys())
+    all_qids= set(dict_llama32_11b.keys()).union(dict_qwen_vl.keys(), dict_qwen_vl_25.keys())
+    
     results=[]
     for qid in sorted(all_qids, key=lambda x:int(x)):
-        s_bio= dict_biomedclip.get(qid, None)
-        s_bio_processed= dict_biomedclip_processed.get(qid, None)
-        s_11b= dict_llama32_11b.get(qid, None)
+        # s_bio= dict_biomedclip.get(qid, None)
+        # s_bio_processed= dict_biomedclip_processed.get(qid, None)
+        s_11b= dict_llama32_11b.get(qid, None) 
         s_11b_processed= dict_llama32_11b_processed.get(qid, None)
-        s_70b= dict_llama32_70b.get(qid, None)
-        s_70b_processed= dict_llama32_70b_processed.get(qid, None)
+        # s_70b= dict_llama32_70b.get(qid, None)
+        # s_70b_processed= dict_llama32_70b_processed.get(qid, None)
         s_qwen= dict_qwen_vl.get(qid, None)
         s_qwen_processed= dict_qwen_vl_processed.get(qid, None)
+        s_qwen_25= dict_qwen_vl_25.get(qid, None)
+        s_qwen_25_processed= dict_qwen_vl_25_processed.get(qid, None)
         rec={
             'question_id': qid,
-            'grounding_biomedclip': s_bio,
-            'grounding_biomedclip_processed': s_bio_processed,
+            # 'grounding_biomedclip': s_bio,
+            # 'grounding_biomedclip_processed': s_bio_processed,
             'grounding_llama32_11b': s_11b,
             'grounding_llama32_11b_processed': s_11b_processed,
-            'grounding_llama32_70b': s_70b,
-            'grounding_llama32_70b_processed': s_70b_processed,
+            # 'grounding_llama32_70b': s_70b,
+            # 'grounding_llama32_70b_processed': s_70b_processed,
             'grounding_qwen_vl': s_qwen,
-            'grounding_qwen_vl_processed': s_qwen_processed
+            'grounding_qwen_vl_processed': s_qwen_processed,
+            'grounding_qwen_vl_25': s_qwen_25,
+            'grounding_qwen_vl_25_processed': s_qwen_25_processed
         }
         results.append(rec)
     df = pd.DataFrame(results)
@@ -801,48 +802,54 @@ def main():
       4) Merge
       5) Plots
     """
-    explanation_dir = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/explanations"
-    out_dir         = "my_outputs"
+    explanation_dir = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/explanations" # for slake
+    # explanation_dir = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/explanations_2000" # for vqa
+    # out_dir         = "my_outputs/vqa" # for vqa
+    out_dir = "my_outputs" # for slake 
     make_dir_if_not_exists(out_dir)
 
     # Step 1: Baseline
     baseline_csv = os.path.join(out_dir, "baseline.csv")
-    df_baseline  = get_baseline_results(
-        explanation_dir,
-        baseline_csv,
-        max_files=None  # or set an integer for quick testing
-    )
+    # df_baseline  = get_baseline_results(
+    #     explanation_dir,
+    #     baseline_csv,
+    #     max_files=None  # or set an integer for quick testing
+    # )
 
     # Step 2: Accuracy
-    accuracy_csv = os.path.join(out_dir, "accuracy.csv")
+    accuracy_csv = os.path.join(out_dir, "accuracy_march10.csv")
     df_acc = get_accuracy(
         explanation_dir,
         accuracy_csv,
-        max_files=None
+        max_files=None, 
+        add_question_for_accuracy_calculation=True
     )
 
     # Step 3: Grounding (single process, typically quick)
-    grounding_biomedclip_folder = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding"
-    grounding_llama32_11b_folder= "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_llama32"
-    grounding_llama32_70b_folder= "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_llama32_90b"
-    grounding_qwen_vl_folder    = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_qwen_vl"
+    # grounding_biomedclip_folder = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding" 
+    # grounding_llama32_11b_folder= "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_llama32"
+    grounding_llama32_11b_folder = '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/grounding_with_llama32_11B'
+    # grounding_llama32_70b_folder= "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_llama32_90b"
+    grounding_qwen_vl_folder   = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/grounding_with_qwen_vl"
+    grounding_qwen_25_7B_vl_folder = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/grounding_with_qwen_vl_25_7B"
     grounding_csv= os.path.join(out_dir, "grounding.csv")
     
-    df_grounding= get_grounding(
-        grounding_biomedclip_folder,
-        grounding_llama32_11b_folder,
-        grounding_llama32_70b_folder,
-        grounding_qwen_vl_folder,
-        grounding_csv
-    )
+ #   df_grounding= get_grounding(
+    #     # grounding_biomedclip_folder, 
+    #     grounding_llama32_11b_folder,
+    #     # grounding_llama32_70b_folder,
+    #     grounding_qwen_25_7B_vl_folder,
+    #     grounding_qwen_vl_folder,
+    #     grounding_csv
+    # )
 
     # Step 4: Merge
     merged_csv= os.path.join(out_dir, "merged.csv")
-    df_merged= merge_baseline_accuracy_grounding(baseline_csv, accuracy_csv, grounding_csv, merged_csv)
+#    df_merged= merge_baseline_accuracy_grounding(baseline_csv, accuracy_csv, grounding_csv, merged_csv)
 
-    # Step 5: Plots
-    plots_dir= os.path.join(out_dir, "plots")
-    get_plots(merged_csv, plots_dir)
+    # # Step 5: Plots
+    # plots_dir= os.path.join(out_dir, "plots")
+    # get_plots(merged_csv, plots_dir)
 
     print("\n[INFO] All steps complete!")
 

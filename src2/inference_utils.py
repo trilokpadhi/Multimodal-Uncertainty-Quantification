@@ -26,6 +26,9 @@ from qwen_vl_utils import process_vision_info
 # llama2 for full sentence generation if the model gives one word response 
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, StoppingCriteria, StoppingCriteriaList
+from google.api_core.exceptions import ResourceExhausted, DeadlineExceeded
+import time
+import random
 
 ############### Uncomment below imports if you are using Llava-med ## 
 # import sys
@@ -128,6 +131,7 @@ def generate_explanations_MM(model, processor, sample, rank, params, config_logg
     save_results(sample, config_logging['explanation_dir'], f"explanations_{question_id}.pkl")
     print(f'Explanations generated and saved to file f"explanations_{question_id}.pkl"')
     return f"explanations_{question_id}.pkl"
+
 
 ###############################################################################
 # We define a new function `generate_explanations_MM_med` 
@@ -269,6 +273,113 @@ def generate_explanations_MM_med(model, tokenizer, image_processor, sample, rank
 
     return f"explanations_{question_id}.pkl"
 
+def call_gemini_with_retries(model, contents, generation_config=None, candidate_count=1, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            return model.generate_content(
+                contents=contents,
+                generation_config=generation_config,
+                candidate_count=candidate_count
+            )
+        except ResourceExhausted as e:
+            # 429 Too Many Requests
+            wait_time = 2**attempt + random.random()
+            print(f"[Retry {attempt+1}/{max_retries}] Rate-limited. Sleeping {wait_time:.1f}s...")
+            time.sleep(wait_time)
+        except DeadlineExceeded as e:
+            # Timed out
+            wait_time = 2**attempt + random.random()
+            print(f"[Retry {attempt+1}/{max_retries}] Request timed out. Sleeping {wait_time:.1f}s...")
+            time.sleep(wait_time)
+    raise RuntimeError("Max retries exceeded for Gemini request")
+
+def generate_explanations_MM_gemini(model, sample, rank, params, config_logging):
+    """
+    Generate explanations for a multimodal (image + text) question using Google's Gemini Model.
+
+    :param model: An instance of genai.GenerativeModel (e.g. genai.GenerativeModel(model_id)).
+    :param sample: Dictionary containing image paths, question IDs, promptified questions, etc.
+    :param rank: Device rank or process rank (to keep consistent with your existing structure).
+    :param params: Dictionary of generation parameters (e.g. temperature, top_p, etc.).
+    :param config_logging: Dictionary of logging/config information, including explanation_dir.
+    :return: The filename of the saved explanations pkl file.
+    """
+
+    # Identify question / image
+    # question_id = sample['question_ids'][0] # for vqa
+    question_id = sample['qids'][0] # for slake 
+    # image_path = sample['image_paths'][0] # for vqa
+    image_path = sample['image_paths'][0].replace('/mnt/my_ebs_volume/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/SLAKE/Slake1.0/imgs', '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/datasets_/Slake1.0/imgs') # for slake 
+
+    generation_config = {
+    "max_output_tokens": 128,  # Adjust the number of tokens as needed
+    "temperature": 0.7,        # Optional: Controls the randomness of the output
+    "top_p": 0.9               # Optional: Controls the diversity of the output
+}
+    
+    # Check if results already exist
+    explanation_filename = f"explanations_{question_id}.pkl"
+    explanation_filepath = os.path.join(config_logging['explanation_dir'], explanation_filename)
+
+    if os.path.exists(explanation_filepath):
+        print(f"Explanations for question {question_id} already exist... Skipping...")
+        return explanation_filename
+
+    print(f"Generating explanations for question {question_id}")
+
+    # Number of responses to sample for each image
+    total = params.get('no_of_responses_sampled_per_image', 1)
+
+    # Read image in binary
+    with open(image_path, "rb") as img_file:
+        image_data = img_file.read()
+
+    # The base prompt or question
+    base_prompt = sample['promptified_questions'][0]
+
+    # Generate multiple responses using Gemini
+    for i in range(total):
+        # Adjust prompt if needed, or use the same prompt for each sample
+        prompt = base_prompt
+
+        # Make the request to Gemini
+        response = model.generate_content(
+            contents=[
+                {"mime_type": "image/jpeg", "data": image_data},   # or "image/png" if PNG
+                {"text": prompt}
+            ],
+            generation_config=generation_config,
+            # candidate_count=1
+            # You can add more parameters if needed, e.g. candidate_count, etc.
+        )
+        # (CHANGES) Handle blocked or empty responses
+        if not response.candidates:
+            # The content was blocked or no candidate was returned
+            print(prompt)
+            print('-'*50)
+            print(f"BLOCKED_BY_CONTENT_POLICY: reason={response.prompt_feedback.block_reason}")
+            output_text = f"BLOCKED_BY_CONTENT_POLICY: reason={response.prompt_feedback.block_reason}"
+        else:
+            # Safe to call response.text now, or directly get from first candidate
+            # `response.text` is a convenience for a single candidate
+            # or you can do: output_text = response.candidates[0]['output']
+            # but response.text should work since there is exactly 1 candidate
+            output_text = response.text
+
+        # If you want only the first line, you can do something like:
+        output_text_first_line = output_text.split('\n')[0]
+
+        sample[f'response_{i}'] = {
+            'prompt': prompt,
+            'decoded_outputs': output_text_first_line
+        }
+        
+
+    # Save the results to .pkl
+    save_results(sample, config_logging['explanation_dir'], explanation_filename)
+    print(f'Explanations generated and saved to file "{explanation_filename}"')
+
+    return explanation_filename
 
     
 @dataclass
@@ -505,7 +616,7 @@ def generate_grounded_segmentation(
     sample_explanations_file_path = os.path.join(config_logging['explanation_dir'], sample_explanations_file_name)
     sample_explanations = pickle.load(open(sample_explanations_file_path, 'rb'))
     question_id = sample_explanations['question_ids'][0]
-    sample_grounding_file_path = os.path.join(config_logging['grounding_dir'], f"grounding_{question_id}.pkl")
+    sample_grounding_file_path = os.path.join(config_logging['grounding_dir_with_gdsam'], f"grounding_{question_id}.pkl")
     # check if the grounding file already exists
     if os.path.exists(sample_grounding_file_path):
         print(f"Grounding scores for question {question_id} already exist at {sample_grounding_file_path}. Skipping...")
@@ -567,7 +678,7 @@ def generate_grounded_segmentation(
 
         # save the results to a file
         # save_results(sample_explanations, config_logging['grounding_dir'], f"grounding_{sample_explanations['question_ids'][0]}.pkl")
-        save_results(sample_grounding, config_logging['grounding_dir'], f"grounding_{sample_grounding['question_id']}.pkl")
+        save_results(sample_grounding, config_logging['grounding_dir_with_gdsam'], f"grounding_{sample_grounding['question_id']}.pkl")
         print(f'Grounding scores generated and saved to file f"grounding_{sample_explanations["question_ids"][0]}.pkl"') 
 
 def generate_grounding_with_llama3_2(
@@ -580,14 +691,16 @@ def generate_grounding_with_llama3_2(
     # Load explanation file
     sample_explanations_file_path = os.path.join(config_logging['explanation_dir'], file)
     sample_explanations = pickle.load(open(sample_explanations_file_path, 'rb'))
-    # question_id = sample_explanations['question_ids'][0]
-    question_id = sample_explanations['qids'][0]
+    question_id = sample_explanations['question_ids'][0]
+    # question_id = sample_explanations['qids'][0]
 
     # Output path
-    sample_explanations_with_grounding_file_path = os.path.join(config_logging['grounding_dir_with_llama32_90B'], f"grounding_{question_id}.pkl")
+    # sample_explanations_with_grounding_file_path = os.path.join(config_logging['grounding_dir_with_llama32_90B'], f"grounding_{question_id}.pkl")
+    sample_explanations_with_grounding_file_path = os.path.join(config_logging['grounding_dir_with_llama32_11B'], f"grounding_{question_id}.pkl")
 
     # Create directory if it doesn't exist
-    os.makedirs(config_logging['grounding_dir_with_llama32_90B'], exist_ok=True)
+    # os.makedirs(config_logging['grounding_dir_with_llama32_90B'], exist_ok=True)
+    os.makedirs(config_logging['grounding_dir_with_llama32_11B'], exist_ok=True)
     # Skip if already processed
     if os.path.exists(sample_explanations_with_grounding_file_path):
         print(f"Grounding scores for question {question_id} already exist. Skipping...")
@@ -596,8 +709,8 @@ def generate_grounding_with_llama3_2(
     sample_explanations_with_grounding = sample_explanations.copy()
     # sample_explanations_with_grounding['question_id'] = question_id
 
-    # image_path = sample_explanations['image_paths'][0]
-    image_path = sample_explanations['image_paths'][0].replace('/mnt/my_ebs_volume/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/SLAKE/Slake1.0/imgs', '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/datasets_/Slake1.0/imgs')
+    image_path = sample_explanations['image_paths'][0]
+    # image_path = sample_explanations['image_paths'][0].replace('/mnt/my_ebs_volume/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/SLAKE/Slake1.0/imgs', '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/datasets_/Slake1.0/imgs')
     image = Image.open(image_path).convert("RGB")
                 
     # Process responses
@@ -662,6 +775,114 @@ def generate_grounding_with_llama3_2(
 
     print(f"Saved grounding results for {question_id} to {sample_explanations_with_grounding_file_path}")
     
+def generate_grounding_with_gemini(
+    file,
+    gemini_model,
+    rank,
+    config_logging
+):
+    """
+    Use Gemini to check if each response in the explanation file correctly describes the image.
+
+    :param file: The name of the .pkl file containing explanations (e.g., "explanations_123.pkl").
+    :param gemini_model: An instance of genai.GenerativeModel (e.g., genai.GenerativeModel(model_id)).
+    :param rank: The current worker/process rank (useful for logging). 
+    :param config_logging: Dictionary with paths such as explanation_dir and grounding_dir.
+    """
+    # 1. Load the explanation file
+    explanation_path = os.path.join(config_logging['explanation_dir'], file)
+    with open(explanation_path, 'rb') as f:
+        sample_explanations = pickle.load(f)
+
+    question_id = sample_explanations['question_ids'][0] # for vqa
+    # question_id = sample_explanations['qids'][0] # for slake 
+
+    # 2. Build output path for grounding results
+    # Adjust which directory you use based on your config.
+    grounding_dir = config_logging['grounding_dir_with_gemini']  # or another path if you prefer
+    os.makedirs(grounding_dir, exist_ok=True)
+
+    grounding_path = os.path.join(grounding_dir, f"grounding_{question_id}.pkl")
+
+    # Skip if already done
+    if os.path.exists(grounding_path):
+        print(f"Grounding scores for question {question_id} already exist. Skipping...")
+        return
+
+    # Copy the entire dictionary so we can add the grounding results
+    sample_explanations_with_grounding = sample_explanations.copy()
+
+    # 3. Read the image
+    image_path = sample_explanations['image_paths'][0] # for vqa
+    # image_path = sample_explanations['image_paths'][0].replace('/mnt/my_ebs_volume/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/SLAKE/Slake1.0/imgs', '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/datasets_/Slake1.0/imgs') # for slake 
+    with open(image_path, "rb") as img_file:
+        image_data = img_file.read()
+
+    # 4. Iterate over each response key
+    for key in sample_explanations.keys():
+        if not key.startswith("response"):
+            continue
+
+        response_text = sample_explanations[key].get('decoded_outputs', None)
+        if not response_text:
+            print(f"Rank {rank}: Skipping {key} - no decoded outputs found.")
+            continue
+
+        # The prompt that we feed Gemini
+        GROUNDING_PROMPT = (
+            "I have an image and a short statement that describes a specific part of the image. "
+            "Your job is to verify if this statement accurately reflects what is shown in the image.\n\n"
+            "Image: <The attached image>\n"
+            f"Statement: \"{response_text}\"\n\n"
+            "Instructions: Respond with only one word — \"Yes\" if the statement is correct, "
+            "\"No\" if the statement is incorrect, or \"Not sure\" if you are uncertain. "
+            "Do not provide any additional explanations."
+        )
+
+        # 5. Call Gemini
+        try:
+            # A minimal generation config
+            generation_config = {
+                "max_output_tokens": 50,
+                "temperature": 0.0,
+                "top_p": 1.0,
+            }
+
+            # Make the request
+            response = gemini_model.generate_content(
+                contents=[
+                    {"mime_type": "image/jpeg", "data": image_data},
+                    {"text": GROUNDING_PROMPT}
+                ],
+                generation_config=generation_config,
+                # candidate_count=1  # Single answer 
+            )
+
+            # Check if blocked or empty
+            if not response.candidates:
+                grounding_result = f"BLOCKED: reason={response.prompt_feedback.block_reason}"
+            else:
+                grounding_result = response.text  # Single candidate
+
+            sample_explanations_with_grounding[key]["gemini_grounding_response"] = grounding_result
+            print(f"Rank {rank} - {key} => {grounding_result}")
+
+        except (ResourceExhausted, DeadlineExceeded) as e:
+            # Rate-limiting or timeouts
+            print(f"Rank {rank} - {key} => Rate limit or timeout error: {str(e)}")
+            sample_explanations_with_grounding[key]["gemini_grounding_response"] = f"API_ERROR: {str(e)}"
+        except Exception as e:
+            print(f"Rank {rank} - {key} => Error: {str(e)}")
+            sample_explanations_with_grounding[key]["gemini_grounding_response"] = f"ERROR: {str(e)}"
+
+        # Optional: if you still want to reduce GPU memory usage in a multi-GPU environment
+        torch.cuda.empty_cache()
+
+    # 6. Save the updated dictionary
+    with open(grounding_path, 'wb') as f:
+        pickle.dump(sample_explanations_with_grounding, f)
+
+    print(f"Saved Gemini grounding results for question {question_id} to {grounding_path}")
     
 def generate_grounding_with_qwen_vl(
         file,
@@ -673,14 +894,16 @@ def generate_grounding_with_qwen_vl(
     # Load explanation file
     sample_explanations_file_path = os.path.join(config_logging['explanation_dir'], file)
     sample_explanations = pickle.load(open(sample_explanations_file_path, 'rb'))
-    # question_id = sample_explanations['question_ids'][0]
-    question_id = sample_explanations['qids'][0]
+    question_id = sample_explanations['question_ids'][0]
+    # question_id = sample_explanations['qids'][0]
 
     # Output path
-    sample_explanations_with_grounding_file_path = os.path.join(config_logging['grounding_dir_with_qwen_vl'], f"grounding_{question_id}.pkl")
+    # sample_explanations_with_grounding_file_path = os.path.join(config_logging['grounding_dir_with_qwen_vl'], f"grounding_{question_id}.pkl")
+    sample_explanations_with_grounding_file_path = os.path.join(config_logging['grounding_dir_with_qwen_vl_25_7B'], f"grounding_{question_id}.pkl")
 
     # Create directory if it doesn't exist
-    os.makedirs(config_logging['grounding_dir_with_qwen_vl'], exist_ok=True)
+    # os.makedirs(config_logging['grounding_dir_with_qwen_vl'], exist_ok=True)
+    os.makedirs(config_logging['grounding_dir_with_qwen_vl_25_7B'], exist_ok=True)
     # Skip if already processed
     if os.path.exists(sample_explanations_with_grounding_file_path):
         print(f"Grounding scores for question {question_id} already exist. Skipping...")
@@ -689,7 +912,8 @@ def generate_grounding_with_qwen_vl(
     sample_explanations_with_grounding = sample_explanations.copy()
     # sample_explanations_with_grounding['question_id'] = question_id
 
-    image_path = sample_explanations['image_paths'][0].replace('/mnt/my_ebs_volume/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/SLAKE/Slake1.0/imgs', '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/datasets_/Slake1.0/imgs')
+    image_path = sample_explanations['image_paths'][0]
+    # image_path = sample_explanations['image_paths'][0].replace('/mnt/my_ebs_volume/home/ubuntu/Multimodal-Uncertainty-Quantification/dataset/SLAKE/Slake1.0/imgs', '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/datasets_/Slake1.0/imgs')
     image = Image.open(image_path).convert("RGB")
                 
     # Process responses
@@ -740,7 +964,7 @@ def generate_grounding_with_qwen_vl(
             result = processor.decode(output[0][inputs["input_ids"].shape[-1]:])
 
             # Save the result
-            sample_explanations_with_grounding[key]["llama_32_response"] = result
+            sample_explanations_with_grounding[key]["qwen_vl_response"] = result
             print(f"Rank {rank} - Result: {result}")
 
             # Clear GPU cache

@@ -28,7 +28,7 @@ def llava_inference_pipeline(config, rank, world_size):
 
     # 2. Load LLaVA
     model_id_llava = config['mm_model']['model_path']
-    model_llava = LlavaForConditionalGeneration.from_pretrained(model_id_llava).to(device)
+    model_llava = LlavaForConditionalGeneration.from_pretrained(model_id_llava, torch_dtype=torch.bfloat16).to(device)
     processor_llava = AutoProcessor.from_pretrained(model_id_llava)
 
     # 3. Generate LLaVA responses for each sample

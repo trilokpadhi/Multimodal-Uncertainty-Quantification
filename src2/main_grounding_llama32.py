@@ -26,8 +26,9 @@ login(key)
 def grounding_inference_pipeline(config, rank, world_size):
     torch.cuda.set_device(rank)
     device = f"cuda:{rank}"
-    model_id = config['grounding']['llama32_model_path']
-    model = MllamaForConditionalGeneration.from_pretrained(model_id, torch_dtype=torch.float16).to(device)
+    model_id = config['grounding']['llama32_model_path_11B']
+    model_weights_path = '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/llama32_11b/meta-llama_Llama-3.2-11B-Vision-Instruct'
+    model = MllamaForConditionalGeneration.from_pretrained(model_weights_path, torch_dtype=torch.bfloat16).to(device)
     processor = AutoProcessor.from_pretrained(model_id)
 
     # 2) Get the full list of .pkl files, then create a subset for each rank

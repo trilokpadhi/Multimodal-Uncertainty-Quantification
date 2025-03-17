@@ -23,6 +23,7 @@ grounding:
   threshold: 0.01
   llama32_model_path: "meta-llama/Llama-3.2-11B-Vision-Instruct"
   qwen_vl_model_path: "AdaptLLM/biomed-Qwen2-VL-2B-Instruct"
+  gemini_model_path: 'gemini-2.0-flash'
 
   # dino_model_path: "path/to/dino/model"
   # top_k: 5
@@ -38,3 +39,4 @@ logging:
   grounding_dir_with_llama32_90B: "runs_slake/llava_med_slake/grounding_with_llama32_90b"
   grounding_dir_with_qwen_vl: "runs_slake/llava_med_slake/grounding_with_qwen_vl"
   grounding_dir_with_biomedclip: "runs_slake/llava_med_slake/grounding_with_biomedclip"
+  grounding_dir_with_gemini: "runs_slake/llava_med_slake/grounding_with_gemini"
