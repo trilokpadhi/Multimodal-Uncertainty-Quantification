@@ -143,7 +143,8 @@ class VQADataset(Dataset):
         question = question_entry['question']
         # the filename is of the format COCO_train2014_000000000025.jpg
         # image_id = annotation_entry['image_id'] 
-        image_id = f'COCO_train2014_{annotation_entry["image_id"]:012d}'
+        # image_id = f'COCO_train2014_{annotation_entry["image_id"]:012d}' 
+        image_id = f'COCO_val2014_{annotation_entry["image_id"]:012d}'
         # answer = annotation_entry['answers'][0]['answer']  # Assuming a single answer is used
         answer = annotation_entry['most_common_answer']
         all_answers = [ans['answer'] for ans in annotation_entry['answers']]
