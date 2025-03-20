@@ -530,7 +530,20 @@ def load_grounding_dict(grounding_folder, score_key='biomedclip_score', score_ty
             continue
         with open(fpath, 'rb') as f:
             data = pickle.load(f)
-        qid = int(data.get('question_ids', None)[0])
+        # qid = int(data.get('question_ids', None)[0])
+        # print(data)
+        try:
+            qid = int(data.get('qids', None)[0])
+        except (TypeError, ValueError, IndexError, KeyError):
+            try:
+                qid = int(data.get('question_id', None))
+            except (TypeError, ValueError, IndexError, KeyError):
+                try:
+                    qid = int(data.get('question_ids', None)[0])
+                except (TypeError, ValueError, IndexError, KeyError) as e:
+                    print(f"[ERROR] Could not find question_id in {fpath}: {e}")
+                    exit()
+        # qid = int(data.get('question_id', None))
         val_list = []
         for key in data.keys():
             if 'response' in key:
@@ -549,7 +562,56 @@ def load_grounding_dict(grounding_folder, score_key='biomedclip_score', score_ty
                 out_processed[qid] = val_list
     return out, out_processed
 
-def get_grounding(llama32_11b_dir, qwen_vl_dir, qwen_vl_25_dir, out_csv):
+# def get_grounding(llama32_11b_dir, qwen_vl_dir, qwen_vl_25_dir, out_csv):
+#     """
+#     Grounding is typically quick, so we do it in a single process (CPU).
+#     """
+#     if os.path.isfile(out_csv):
+#         print(f"[INFO] Grounding results already exist => {out_csv}")
+#         return pd.read_csv(out_csv)
+
+#     # dict_biomedclip, dict_biomedclip_processed   = load_grounding_dict(biomedclip_dir,   score_key='biomedclip_score')
+#     dict_llama32_11b, dict_llama32_11b_processed  = load_grounding_dict(llama32_11b_dir,  score_key='llama_32_response')
+#     # dict_llama32_70b, dict_llama32_70b_processed  = load_grounding_dict(llama32_70b_dir,  score_key='llama_32_response')
+#     dict_qwen_vl, dict_qwen_vl_processed    = load_grounding_dict(qwen_vl_dir, score_key='qwen_vl_response')
+#     dict_qwen_vl_25, dict_qwen_vl_25_processed = load_grounding_dict(qwen_vl_25_dir, score_key='qwen_vl_response')
+    
+
+#     # all_qids= set(dict_biomedclip.keys()).union(dict_llama32_11b.keys(), dict_llama32_70b.keys(), dict_qwen_vl.keys())
+#     all_qids= set(dict_llama32_11b.keys()).union(dict_qwen_vl.keys(), dict_qwen_vl_25.keys())
+    
+#     results=[]
+#     for qid in sorted(all_qids, key=lambda x:int(x)):
+#         # s_bio= dict_biomedclip.get(qid, None)
+#         # s_bio_processed= dict_biomedclip_processed.get(qid, None)
+#         s_11b= dict_llama32_11b.get(qid, None) 
+#         s_11b_processed= dict_llama32_11b_processed.get(qid, None)
+#         # s_70b= dict_llama32_70b.get(qid, None)
+#         # s_70b_processed= dict_llama32_70b_processed.get(qid, None)
+#         s_qwen= dict_qwen_vl.get(qid, None)
+#         s_qwen_processed= dict_qwen_vl_processed.get(qid, None)
+#         s_qwen_25= dict_qwen_vl_25.get(qid, None)
+#         s_qwen_25_processed= dict_qwen_vl_25_processed.get(qid, None)
+#         rec={
+#             'question_id': qid,
+#             # 'grounding_biomedclip': s_bio,
+#             # 'grounding_biomedclip_processed': s_bio_processed,
+#             'grounding_llama32_11b': s_11b,
+#             'grounding_llama32_11b_processed': s_11b_processed,
+#             # 'grounding_llama32_70b': s_70b,
+#             # 'grounding_llama32_70b_processed': s_70b_processed,
+#             'grounding_qwen_vl': s_qwen,
+#             'grounding_qwen_vl_processed': s_qwen_processed,
+#             'grounding_qwen_vl_25': s_qwen_25,
+#             'grounding_qwen_vl_25_processed': s_qwen_25_processed
+#         }
+#         results.append(rec)
+#     df = pd.DataFrame(results)
+#     df.to_csv(out_csv, index=False)
+#     print(f"[INFO] Grounding => {out_csv}")
+#     return df
+
+def get_grounding(out_csv, grounding_info):
     """
     Grounding is typically quick, so we do it in a single process (CPU).
     """
@@ -557,43 +619,32 @@ def get_grounding(llama32_11b_dir, qwen_vl_dir, qwen_vl_25_dir, out_csv):
         print(f"[INFO] Grounding results already exist => {out_csv}")
         return pd.read_csv(out_csv)
 
-    # dict_biomedclip, dict_biomedclip_processed   = load_grounding_dict(biomedclip_dir,   score_key='biomedclip_score')
-    dict_llama32_11b, dict_llama32_11b_processed  = load_grounding_dict(llama32_11b_dir,  score_key='llama_32_response')
-    # dict_llama32_70b, dict_llama32_70b_processed  = load_grounding_dict(llama32_70b_dir,  score_key='llama_32_response')
-    dict_qwen_vl, dict_qwen_vl_processed    = load_grounding_dict(qwen_vl_dir, score_key='qwen_vl_response')
-    dict_qwen_vl_25, dict_qwen_vl_25_processed = load_grounding_dict(qwen_vl_25_dir, score_key='qwen_vl_response')
-    
-    
+    all_dicts = {}
+    all_processed_dicts = {}
 
-    # all_qids= set(dict_biomedclip.keys()).union(dict_llama32_11b.keys(), dict_llama32_70b.keys(), dict_qwen_vl.keys())
-    all_qids= set(dict_llama32_11b.keys()).union(dict_qwen_vl.keys(), dict_qwen_vl_25.keys())
-    
-    results=[]
-    for qid in sorted(all_qids, key=lambda x:int(x)):
-        # s_bio= dict_biomedclip.get(qid, None)
-        # s_bio_processed= dict_biomedclip_processed.get(qid, None)
-        s_11b= dict_llama32_11b.get(qid, None) 
-        s_11b_processed= dict_llama32_11b_processed.get(qid, None)
-        # s_70b= dict_llama32_70b.get(qid, None)
-        # s_70b_processed= dict_llama32_70b_processed.get(qid, None)
-        s_qwen= dict_qwen_vl.get(qid, None)
-        s_qwen_processed= dict_qwen_vl_processed.get(qid, None)
-        s_qwen_25= dict_qwen_vl_25.get(qid, None)
-        s_qwen_25_processed= dict_qwen_vl_25_processed.get(qid, None)
-        rec={
-            'question_id': qid,
-            # 'grounding_biomedclip': s_bio,
-            # 'grounding_biomedclip_processed': s_bio_processed,
-            'grounding_llama32_11b': s_11b,
-            'grounding_llama32_11b_processed': s_11b_processed,
-            # 'grounding_llama32_70b': s_70b,
-            # 'grounding_llama32_70b_processed': s_70b_processed,
-            'grounding_qwen_vl': s_qwen,
-            'grounding_qwen_vl_processed': s_qwen_processed,
-            'grounding_qwen_vl_25': s_qwen_25,
-            'grounding_qwen_vl_25_processed': s_qwen_25_processed
-        }
+    for key, info in grounding_info.items():
+        folder = info['folder']
+        score_key = info['score_key']
+        if 'biomedclip' in key:
+            score_type = 'continuous'
+            dict_data, dict_processed = load_grounding_dict(folder, score_key=score_key, score_type=score_type)
+        else:
+            dict_data, dict_processed = load_grounding_dict(folder, score_key=score_key)
+        all_dicts[key] = dict_data
+        all_processed_dicts[key] = dict_processed
+
+    all_qids = set()
+    for dict_data in all_dicts.values():
+        all_qids.update(dict_data.keys())
+
+    results = []
+    for qid in sorted(all_qids, key=lambda x: int(x)):
+        rec = {'question_id': qid}
+        for key in grounding_info.keys():
+            rec[f'grounding_{key}'] = all_dicts[key].get(qid, None)
+            rec[f'grounding_{key}_processed'] = all_processed_dicts[key].get(qid, None)
         results.append(rec)
+
     df = pd.DataFrame(results)
     df.to_csv(out_csv, index=False)
     print(f"[INFO] Grounding => {out_csv}")
@@ -618,181 +669,9 @@ def merge_baseline_accuracy_grounding(baseline_csv, accuracy_csv, grounding_csv,
     print(f"[INFO] Merged => {out_csv}")
     return df_final
 
-##############################################################################
-# STEP 5: PLOTS
-##############################################################################
 
-def get_plots(merged_csv, out_plots_dir):
-    df = pd.read_csv(merged_csv)
-    make_dir_if_not_exists(out_plots_dir)
 
-    # Baseline confidence
-    pe = df['predictive_entropy'].fillna(0).values
-    acc= df['accuracy'].fillna(0).values
-    pe_scaled= min_max_scale(pe)
-    baseline_conf= 1.0 - pe_scaled
 
-    out_path= os.path.join(out_plots_dir, "baseline_ent.png")
-    plot_reliability_diagram(baseline_conf, acc, "Baseline(1-Entropy)", out_path)
-
-    # BiomedCLIP
-    if 'grounding_biomedclip' in df.columns:
-        bio_raw = df['grounding_biomedclip'].fillna(0).values
-        bio_conf= min_max_scale(bio_raw)
-        out_path2= os.path.join(out_plots_dir, "biomedclip_conf.png")
-        plot_reliability_diagram(bio_conf, acc, "BiomedCLIP", out_path2)
-
-        # 2D => baseline + biomedclip
-        X_2d= np.column_stack([baseline_conf, bio_conf])
-        pipe_2d= fit_polynomial_regression(X_2d, acc, degree=2, alpha=3.0)
-        conf_2d= apply_poly_calibration(pipe_2d, X_2d)
-        out_2d= os.path.join(out_plots_dir, "baseline_bio_2D.png")
-        plot_reliability_diagram(conf_2d, acc, "Baseline+Biomedclip(2D)", out_2d)
-
-    # Llama 32 => "Yes"/"No" => numeric
-    def map_yes_no(val):
-        if isinstance(val, str):
-            low = val.lower()
-            if "yes" in low:
-                return 1.0
-            elif "not sure" in low:
-                return 0.5
-            else:
-                return 0.0
-        return 0.0
-
-    if 'grounding_llama32_11b' in df.columns:
-        llama_11b_raw = df['grounding_llama32_11b'].fillna("No").apply(map_yes_no).values
-        llama_70b_raw = df['grounding_llama32_70b'].fillna("No").apply(map_yes_no).values
-
-        if 'grounding_biomedclip' in df.columns:
-            bio_conf= min_max_scale(df['grounding_biomedclip'].fillna(0).values)
-            # 3D => baseline + biomedclip + llama11b
-            X_3d= np.column_stack([baseline_conf, bio_conf, llama_11b_raw])
-            pipe_3d= fit_polynomial_regression(X_3d, acc, degree=2, alpha=3.0)
-            conf_3d= apply_poly_calibration(pipe_3d, X_3d)
-            out_3d= os.path.join(out_plots_dir, "baseline_bio_llama11b_3D.png")
-            plot_reliability_diagram(conf_3d, acc, "Base+Bio+Llama11B(3D)", out_3d)
-
-            # 4D => baseline + biomedclip + llama11b + llama70b
-            X_4d= np.column_stack([baseline_conf, bio_conf, llama_11b_raw, llama_70b_raw])
-            pipe_4d= fit_polynomial_regression(X_4d, acc, degree=2, alpha=3.0)
-            conf_4d= apply_poly_calibration(pipe_4d, X_4d)
-            out_4d= os.path.join(out_plots_dir, "baseline_bio_llama11b_llama70b_4D.png")
-            plot_reliability_diagram(conf_4d, acc, "Base+Bio+Llama11B+70B(4D)", out_4d)
-
-    print("[INFO] Plots complete.")
-
-##############################################################################
-# MAIN
-##############################################################################
-
-def split_data(df, val_percent=0.25, seed=42):
-    np.random.seed(seed)
-    idx = np.random.permutation(len(df))
-    n_val = int(val_percent * len(df))
-    return df.iloc[idx[n_val:]], df.iloc[idx[:n_val]]  # test, calib
-def get_plots(merged_csv, out_plots_dir):
-    df = pd.read_csv(merged_csv).dropna()
-    make_dir_if_not_exists(out_plots_dir)
-    
-    # Split data into calibration and test
-    df_test, df_calib = split_data(df)
-    
-    # Define all metrics and grounding models
-    baseline_metrics = ['predictive_entropy', 'lexical_similarity', 'semantic_entropy']
-    grounding_models = ['biomedclip', 'llama32_11b', 'llama32_70b', 'qwen_vl']
-    
-    # Convert categorical grounding scores to numerical
-    def map_llama_response(response):
-        if isinstance(response, str):
-            if "yes" in response.lower(): return 1.0
-            if "unsure" in response.lower(): return 0.5
-        return 0.0
-    
-    # Process grounding scores
-    grounding_scores = {
-        'biomedclip': min_max_scale(df['grounding_biomedclip'].fillna(0)),
-        'llama32_11b': df['grounding_llama32_11b'].apply(map_llama_response),
-        'llama32_70b': df['grounding_llama32_70b'].apply(map_llama_response),
-        'qwen_vl': min_max_scale(df['grounding_qwen_vl'].fillna(0))  # Add Qwen processing
-    }
-
-    # Process each baseline metric
-    for metric in baseline_metrics:
-        # Process test/calib split
-        test_conf = 1 - min_max_scale(df_test[metric])  # Higher entropy = lower confidence
-        calib_conf = 1 - min_max_scale(df_calib[metric])
-        
-        # Uncalibrated plot
-        plot_reliability_diagram(
-            test_conf, df_test['accuracy'],
-            f"{metric} (Uncalibrated)",
-            os.path.join(out_plots_dir, f"{metric}_uncalibrated.png")
-        )
-        
-        # Calibrate using polynomial regression
-        pipe = fit_polynomial_regression(
-            calib_conf.reshape(-1,1), 
-            df_calib['accuracy'],
-            degree=2
-        )
-        calibrated = apply_poly_calibration(pipe, test_conf.reshape(-1,1))
-        
-        plot_reliability_diagram(
-            calibrated, df_test['accuracy'],
-            f"{metric} (Calibrated)",
-            os.path.join(out_plots_dir, f"{metric}_calibrated.png")
-        )
-
-    # 2D Calibration with grounding models
-    for metric in baseline_metrics:
-        for g_model in grounding_models:
-            # Prepare 2D features
-            X_calib = np.column_stack([
-                1 - min_max_scale(df_calib[metric]),
-                grounding_scores[g_model][df_calib.index]
-            ])
-            
-            X_test = np.column_stack([
-                1 - min_max_scale(df_test[metric]),
-                grounding_scores[g_model][df_test.index]
-            ])
-            
-            # Train and apply calibration
-            pipe = fit_polynomial_regression(X_calib, df_calib['accuracy'])
-            conf_2d = apply_poly_calibration(pipe, X_test)
-            
-            plot_reliability_diagram(
-                conf_2d, df_test['accuracy'],
-                f"{metric}+{g_model} (2D Calibrated)",
-                os.path.join(out_plots_dir, f"{metric}_{g_model}_2d.png")
-            )
-
-    # 3D Calibration with multiple grounding models
-    for metric in baseline_metrics:
-        for g_comb in itertools.combinations(grounding_models, 2):
-            X_calib = np.column_stack([
-                1 - min_max_scale(df_calib[metric]),
-                grounding_scores[g_comb[0]][df_calib.index],
-                grounding_scores[g_comb[1]][df_calib.index]
-            ])
-            
-            X_test = np.column_stack([
-                1 - min_max_scale(df_test[metric]),
-                grounding_scores[g_comb[0]][df_test.index],
-                grounding_scores[g_comb[1]][df_test.index]
-            ])
-            
-            pipe = fit_polynomial_regression(X_calib, df_calib['accuracy'])
-            conf_3d = apply_poly_calibration(pipe, X_test)
-            
-            plot_reliability_diagram(
-                conf_3d, df_test['accuracy'],
-                f"{metric}+{'+'.join(g_comb)} (3D)",
-                os.path.join(out_plots_dir, f"{metric}_{'_'.join(g_comb)}_3d.png")
-            )
-            
 def main():
     """
     Steps:
@@ -805,20 +684,20 @@ def main():
     explanation_dir = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/explanations" # for slake
     # explanation_dir = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/explanations_2000" # for vqa
     # out_dir         = "my_outputs/vqa" # for vqa
-    out_dir = "my_outputs" # for slake 
+    out_dir = "my_outputs_slake" # for slake 
     make_dir_if_not_exists(out_dir)
 
     # Step 1: Baseline
     baseline_csv = os.path.join(out_dir, "baseline.csv")
-    # df_baseline  = get_baseline_results(
-    #     explanation_dir,
-    #     baseline_csv,
-    #     max_files=None  # or set an integer for quick testing
-    # )
+    get_baseline_results(
+        explanation_dir,
+        baseline_csv,
+        max_files=None  # or set an integer for quick testing
+    )
 
     # Step 2: Accuracy
     accuracy_csv = os.path.join(out_dir, "accuracy_march10.csv")
-    df_acc = get_accuracy(
+    get_accuracy(
         explanation_dir,
         accuracy_csv,
         max_files=None, 
@@ -828,28 +707,52 @@ def main():
     # Step 3: Grounding (single process, typically quick)
     # grounding_biomedclip_folder = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding" 
     # grounding_llama32_11b_folder= "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_llama32"
-    grounding_llama32_11b_folder = '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/grounding_with_llama32_11B'
-    # grounding_llama32_70b_folder= "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_llama32_90b"
-    grounding_qwen_vl_folder   = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/grounding_with_qwen_vl"
-    grounding_qwen_25_7B_vl_folder = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/grounding_with_qwen_vl_25_7B"
-    grounding_csv= os.path.join(out_dir, "grounding.csv")
+    # grounding_llama32_11b_folder = '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/grounding_with_llama32_11B'
+    # # grounding_llama32_70b_folder= "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_llama32_90b"
+    # grounding_qwen_vl_folder   = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/grounding_with_qwen_vl"
+    # grounding_qwen_25_7B_vl_folder = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/grounding_with_qwen_vl_25_7B"
+    # grounding_csv= os.path.join(out_dir, "grounding.csv")
+    # grounding_gemini = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_gemini"
+    grounding_info = {
+    'biomedclip': {
+        'folder': '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding',
+        'score_key': 'biomedclip_score',
+        'score_type': 'continuous'
+    },
+    'llama32_11b': {
+        'folder': '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_llama32',
+        'score_key': 'llama_32_response'
+    },
+    # 'qwen_vl': {
+    #     'folder': "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/grounding_with_qwen_vl",
+    #     'score_key': 'qwen_vl_response'
+    # },
+    'qwen_vl': {
+        'folder': "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_qwen_vl",
+        'score_key': 'qwen_vl_response'
+    },
+    'gemini': {
+        'folder': "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_gemini",
+        'score_key': 'gemini_grounding_response'
+    }
+    }
+    grounding_csv = os.path.join(out_dir, "grounding.csv")
+    get_grounding(grounding_csv, grounding_info)
     
- #   df_grounding= get_grounding(
+    # get_grounding(
     #     # grounding_biomedclip_folder, 
     #     grounding_llama32_11b_folder,
     #     # grounding_llama32_70b_folder,
     #     grounding_qwen_25_7B_vl_folder,
     #     grounding_qwen_vl_folder,
+    #     grounding_gemini,
     #     grounding_csv
     # )
 
     # Step 4: Merge
     merged_csv= os.path.join(out_dir, "merged.csv")
-#    df_merged= merge_baseline_accuracy_grounding(baseline_csv, accuracy_csv, grounding_csv, merged_csv)
+    merge_baseline_accuracy_grounding(baseline_csv, accuracy_csv, grounding_csv, merged_csv)
 
-    # # Step 5: Plots
-    # plots_dir= os.path.join(out_dir, "plots")
-    # get_plots(merged_csv, plots_dir)
 
     print("\n[INFO] All steps complete!")
 
