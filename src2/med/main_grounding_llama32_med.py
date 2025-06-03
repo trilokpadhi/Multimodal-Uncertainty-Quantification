@@ -8,6 +8,9 @@ import torch.distributed as dist
 from tqdm import tqdm
 
 # Import your existing utilities
+import sys
+# how to import the file from previous directory 
+sys.path.append("/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/src2") 
 # from src2.data_utils import get_vqa_dataloader   # or get_dataloader if needed
 from inference_utils import generate_grounded_segmentation, generate_grounding_with_llama3_2
 from transformers import pipeline, AutoProcessor, LlavaForConditionalGeneration, AutoModelForMaskGeneration, MllamaForConditionalGeneration
@@ -17,7 +20,7 @@ from huggingface_hub import login
 # ------------------------------------------------------------------
 # Logging setup
 logging.basicConfig(filename='inference_log.log', level=logging.INFO)
-key = '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'
+key = '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'
 login(key)
 
 #################################################################################

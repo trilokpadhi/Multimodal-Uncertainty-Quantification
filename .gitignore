@@ -9,3 +9,7 @@ llama32_11b/
 runs_slake/
 runs_vqa6/
 trash/
+LLaVA-Med/
+bitsandbytes/
+playground/BiomedParse/
+.specstory/

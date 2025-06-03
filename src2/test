@@ -1,0 +1,27 @@
+\begin{table}[htbp]
+\centering
+\begin{tabular}{|l|l|c|c|c|c|}
+\hline
+\textbf{Baseline} & \textbf{Grounding Model} & \textbf{Mean ECE} & \textbf{Variance ECE} & \textbf{Mean T} & \textbf{Mean C} \\
+\hline
+LexSim & baseline & 0.0308 & 0.0 &  &  \\
+LexSim & temperature\_scaled & 0.0312 & 0.0 & 0.9008 &  \\
+LexSim & BiomedCLIP & 0.0040 & 0.0 & 0.1 & 0.2 \\
+LexSim & LLaMA 3.2V & 0.0134 & 0.0 & 0.5004 & 0.14 \\
+NumSets & baseline & 0.4263 & 0.0 &  &  \\
+NumSets & temperature\_scaled & 0.2015 & 0.0 & 0.1 &  \\
+NumSets & BiomedCLIP & 0.0070 & 0.0 & 0.1 & 0.19 \\
+NumSets & LLaMA 3.2V & 0.0212 & 0.0 & 0.1 & 0.2 \\
+SemEnt & baseline & 0.3764 & 0.0 &  &  \\
+SemEnt & temperature\_scaled & 0.2221 & 0.0 & 0.1 &  \\
+SemEnt & BiomedCLIP & 0.0080 & 0.0 & 0.1 & 0.19 \\
+SemEnt & LLaMA 3.2V & 0.0098 & 0.0 & 0.3002 & 0.15 \\
+PredEnt & baseline & 0.3902 & 0.0 &  &  \\
+PredEnt & temperature\_scaled & 0.2149 & 0.0 & 0.1 &  \\
+PredEnt & BiomedCLIP & 0.0069 & 0.0 & 0.1 & 0.19 \\
+PredEnt & LLaMA 3.2V & 0.0138 & 0.0 & 0.1 & 0.18 \\
+\hline
+\end{tabular}
+\caption{Comparison of mean ECE, variance ECE, temperature (T), and confidence (C) across baseline methods and grounding models.}
+\label{tab:ece_comparison}
+\end{table}

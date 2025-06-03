@@ -36,12 +36,8 @@ uncertainty:
 logging:
   explanation_dir: "runs_slake/gemini_slake/explanations"
   grounding_dir: "runs_slake/gemini_slake/grounding"
-  grounding_dir_with_llama32: "runs_slake/gemini_slake/grounding_with_llama32"
+  grounding_dir_with_llama32_11B: "runs_slake/gemini_slake/grounding_with_llama32_11B"
   grounding_dir_with_llama32_90B: "runs_slake/gemini_slake/grounding_with_llama32_90b"
-  grounding_dir_with_qwen_vl: "runs_slake/gemini_slake/grounding_with_qwen_vl"
+  grounding_dir_with_qwen_vl_25_7B: "runs_slake/gemini_slake/grounding_with_qwen_vl"
   grounding_dir_with_biomedclip: "runs_slake/gemini_slake/grounding_with_biomedclip"
   grounding_dir_with_gemini: "runs_slake/gemini_slake/grounding_with_gemini"
-
-
-
-  groundi

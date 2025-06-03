@@ -1,0 +1,33 @@
+BaselineConfidence,CalibrationMethod,GroundingContext,MeanEvalECE,VarEvalECE,MeanT,MeanC,MeanCalibECE
+lexical_similarity_min_max_scaled,None (Baseline),N/A,0.03245932346935619,3.788044709137302e-06,,,
+lexical_similarity_min_max_scaled,Temperature Scaling (Baseline Conf),N/A,0.03976403990149277,0.0001628,0.9408416833667337,,0.03385873759438283
+lexical_similarity_min_max_scaled,Exponent + C,grounding_biomedclip_mean_min_max_scaled,0.016913663500688552,0.0001124,0.34024048096192394,0.186,0.005432444531420787
+lexical_similarity_min_max_scaled,Temperature Scaling (Grounding Only),grounding_biomedclip_mean_min_max_scaled,0.1363216064642774,5.27e-05,0.3802805611222445,,0.13412236229205463
+lexical_similarity_min_max_scaled,Exponent + C,grounding_llama32_11b_mean_min_max_scaled,0.02504036980524847,7.49e-05,0.22012024048096196,0.196,0.009137032873125114
+lexical_similarity_min_max_scaled,Temperature Scaling (Grounding Only),grounding_llama32_11b_mean_min_max_scaled,0.168311709844508,0.000101,0.26016032064128264,,0.17164767675390008
+lexical_similarity_min_max_scaled,Exponent + C,grounding_qwen_vl_mean_min_max_scaled,0.03245932346935619,3.8e-06,0.1,0.0,0.03425963162253556
+lexical_similarity_min_max_scaled,Temperature Scaling (Grounding Only),grounding_qwen_vl_mean_min_max_scaled,0.0,0.0,0.1,,0.0
+num_clusters_min_max_scaled,None (Baseline),N/A,0.42730093676814984,1.1172317623636479e-05,,,
+num_clusters_min_max_scaled,Temperature Scaling (Baseline Conf),N/A,0.19396593005719015,1.53e-05,0.1,,0.21893653223252416
+num_clusters_min_max_scaled,Exponent + C,grounding_biomedclip_mean_min_max_scaled,0.025734766897010663,0.0001402,0.1,0.21200000000000002,0.008693937287841604
+num_clusters_min_max_scaled,Temperature Scaling (Grounding Only),grounding_biomedclip_mean_min_max_scaled,0.1363216064642774,5.27e-05,0.3802805611222445,,0.13412236229205463
+num_clusters_min_max_scaled,Exponent + C,grounding_llama32_11b_mean_min_max_scaled,0.02025581907699994,7.04e-05,0.1,0.21200000000000002,0.010694753537901242
+num_clusters_min_max_scaled,Temperature Scaling (Grounding Only),grounding_llama32_11b_mean_min_max_scaled,0.168311709844508,0.000101,0.26016032064128264,,0.17164767675390008
+num_clusters_min_max_scaled,Exponent + C,grounding_qwen_vl_mean_min_max_scaled,0.10519613583138172,3.32e-05,0.1,0.5,0.10328271028037381
+num_clusters_min_max_scaled,Temperature Scaling (Grounding Only),grounding_qwen_vl_mean_min_max_scaled,0.0,0.0,0.1,,0.0
+confidence_from_semantic_entropy_min_max_scaled,None (Baseline),N/A,0.382695954985642,2.076246063650224e-05,,,
+confidence_from_semantic_entropy_min_max_scaled,Temperature Scaling (Baseline Conf),N/A,0.22879073819007126,8.9e-05,0.2601603206412826,,0.2115887452920934
+confidence_from_semantic_entropy_min_max_scaled,Exponent + C,grounding_biomedclip_mean_min_max_scaled,0.024885836171417257,0.0001292,0.1,0.21200000000000002,0.00909954326278253
+confidence_from_semantic_entropy_min_max_scaled,Temperature Scaling (Grounding Only),grounding_biomedclip_mean_min_max_scaled,0.1363216064642774,5.27e-05,0.3802805611222445,,0.13412236229205463
+confidence_from_semantic_entropy_min_max_scaled,Exponent + C,grounding_llama32_11b_mean_min_max_scaled,0.027266250018485955,0.0001882,0.14004008016032063,0.202,0.010102524160268418
+confidence_from_semantic_entropy_min_max_scaled,Temperature Scaling (Grounding Only),grounding_llama32_11b_mean_min_max_scaled,0.168311709844508,0.000101,0.26016032064128264,,0.17164767675390008
+confidence_from_semantic_entropy_min_max_scaled,Exponent + C,grounding_qwen_vl_mean_min_max_scaled,0.25757143161782736,1.63e-05,0.1,0.496,0.2540346707422775
+confidence_from_semantic_entropy_min_max_scaled,Temperature Scaling (Grounding Only),grounding_qwen_vl_mean_min_max_scaled,0.0,0.0,0.1,,0.0
+confidence_from_predictive_entropy_min_max_scaled,None (Baseline),N/A,0.3944765590769988,1.9814169644930635e-05,,,
+confidence_from_predictive_entropy_min_max_scaled,Temperature Scaling (Baseline Conf),N/A,0.2190022359726637,3.17e-05,0.22012024048096196,,0.21619619508404742
+confidence_from_predictive_entropy_min_max_scaled,Exponent + C,grounding_biomedclip_mean_min_max_scaled,0.028363236792047754,0.0001303,0.1,0.21400000000000002,0.00821379581185055
+confidence_from_predictive_entropy_min_max_scaled,Temperature Scaling (Grounding Only),grounding_biomedclip_mean_min_max_scaled,0.1363216064642774,5.27e-05,0.3802805611222445,,0.13412236229205463
+confidence_from_predictive_entropy_min_max_scaled,Exponent + C,grounding_llama32_11b_mean_min_max_scaled,0.01947115622142213,4.31e-05,0.1,0.20800000000000002,0.007367784681397508
+confidence_from_predictive_entropy_min_max_scaled,Temperature Scaling (Grounding Only),grounding_llama32_11b_mean_min_max_scaled,0.168311709844508,0.000101,0.26016032064128264,,0.17164767675390008
+confidence_from_predictive_entropy_min_max_scaled,Exponent + C,grounding_qwen_vl_mean_min_max_scaled,0.23493768056590253,1.79e-05,0.1,0.49800000000000005,0.23296199396816833
+confidence_from_predictive_entropy_min_max_scaled,Temperature Scaling (Grounding Only),grounding_qwen_vl_mean_min_max_scaled,0.0,0.0,0.1,,0.0

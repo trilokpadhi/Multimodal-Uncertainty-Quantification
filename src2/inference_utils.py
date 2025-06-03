@@ -691,8 +691,8 @@ def generate_grounding_with_llama3_2(
     # Load explanation file
     sample_explanations_file_path = os.path.join(config_logging['explanation_dir'], file)
     sample_explanations = pickle.load(open(sample_explanations_file_path, 'rb'))
-    question_id = sample_explanations['question_ids'][0]
-    # question_id = sample_explanations['qids'][0]
+    # question_id = sample_explanations['question_ids'][0]
+    question_id = sample_explanations['qids'][0]
 
     # Output path
     # sample_explanations_with_grounding_file_path = os.path.join(config_logging['grounding_dir_with_llama32_90B'], f"grounding_{question_id}.pkl")
@@ -894,8 +894,8 @@ def generate_grounding_with_qwen_vl(
     # Load explanation file
     sample_explanations_file_path = os.path.join(config_logging['explanation_dir'], file)
     sample_explanations = pickle.load(open(sample_explanations_file_path, 'rb'))
-    question_id = sample_explanations['question_ids'][0]
-    # question_id = sample_explanations['qids'][0]
+    # question_id = sample_explanations['question_ids'][0]
+    question_id = sample_explanations['qids'][0]
 
     # Output path
     # sample_explanations_with_grounding_file_path = os.path.join(config_logging['grounding_dir_with_qwen_vl'], f"grounding_{question_id}.pkl")
@@ -953,7 +953,7 @@ def generate_grounding_with_qwen_vl(
             image_inputs, _ = process_vision_info(messages)
             inputs = processor(
                 text = [input_text],
-                image = image_inputs,
+                images = image_inputs,
                 videos = None,
                 # add_special_tokens=False,
                 return_tensors="pt",

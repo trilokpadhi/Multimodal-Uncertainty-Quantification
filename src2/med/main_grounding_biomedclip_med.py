@@ -9,6 +9,9 @@ from tqdm import tqdm
 
 # Import your existing utilities
 # from src2.data_utils import get_vqa_dataloader   # or get_dataloader if needed
+import sys
+# how to import the file from previous directory 
+sys.path.append("/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/src2") 
 from inference_utils import generate_biomedclip_scores
 # from transformers import pipeline, AutoProcessor, LlavaForConditionalGeneration, AutoModelForMaskGeneration, MllamaForConditionalGeneration
 import pickle
@@ -18,7 +21,7 @@ from open_clip import create_model_from_pretrained, get_tokenizer
 # ------------------------------------------------------------------
 # Logging setup
 logging.basicConfig(filename='inference_log.log', level=logging.INFO)
-key = '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'
+key = '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'
 login(key)
 
 #################################################################################

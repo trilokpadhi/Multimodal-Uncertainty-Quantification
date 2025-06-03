@@ -1,0 +1,131 @@
+\begin{table}[!t]
+    \centering
+    \renewcommand{\arraystretch}{1.2}
+    \begin{tabular}{llrrrr}
+        \toprule
+        \textbf{Baseline} & \textbf{Grounding Model} & \textbf{Mean ECE} & \textbf{Variance ECE} & \textbf{Mean T} & \textbf{Mean C} \\
+        \midrule
+        % Lexical Similarity
+        LexSim 
+            & baseline 
+            & 0.031 
+            & 0.0 
+            &  &  \\[1mm]
+        LexSim 
+            & temperature\_scaled 
+            & 0.031 
+            & 0.0 
+            &  &  \\[1mm]
+        LexSim 
+            & With Biomedclip 
+            & 0.004 
+            & 0.0 
+            & 0.1 
+            & 0.2 \\[1mm]
+        LexSim 
+            & Llama3.2V 11B
+            & 0.013 
+            & 0.0 
+            & 0.500 
+            & 0.14 \\[1mm]
+        LexSim 
+            & Qwen VL 
+            & 0.038 
+            & 0.0 
+            & 0.1 
+            & 0.0 \\
+        \midrule
+        % Num Clusters
+        NumSets 
+            & baseline 
+            & 0.426 
+            & 0.0 
+            &  &  \\[1mm]
+        NumSets 
+            & temperature\_scaled 
+            & 0.201 
+            & 0.0 
+            &  &  \\[1mm]
+        NumSets 
+            & With Biomedclip 
+            & 0.007 
+            & 0.0 
+            & 0.1 
+            & 0.19 \\[1mm]
+        NumSets 
+            & Llama3.2V 11B
+            & 0.021 
+            & 0.0 
+            & 0.1 
+            & 0.2 \\[1mm]
+        NumSets 
+            & Qwen VL 
+            & 0.132 
+            & 0.0 
+            & 0.1 
+            & 0.5 \\
+        \midrule
+        % Confidence from Semantic Entropy
+        SemEnt 
+            & baseline 
+            & 0.376 
+            & 0.0 
+            &  &  \\[1mm]
+        SemEnt 
+            & temperature\_scaled 
+            & 0.222 
+            & 0.0 
+            &  &  \\[1mm]
+        SemEnt 
+            & With Biomedclip 
+            & 0.008 
+            & 0.0 
+            & 0.1 
+            & 0.19 \\[1mm]
+        SemEnt 
+            & Llama3.2V 11B
+            & 0.0098 
+            & 0.0 
+            & 0.300 
+            & 0.15 \\[1mm]
+        SemEnt 
+            & Qwen VL 
+            & 0.247 
+            & 0.0 
+            & 0.1 
+            & 0.5 \\
+        \midrule
+        % Confidence from Predictive Entropy
+        PredEnt 
+            & baseline 
+            & 0.390 
+            & 0.0 
+            &  &  \\[1mm]
+        PredEnt 
+            & temperature\_scaled 
+            & 0.215 
+            & 0.0 
+            &  &  \\[1mm]
+        PredEnt 
+            & With Biomedclip 
+            & 0.007 
+            & 0.0 
+            & 0.1 
+            & 0.19 \\[1mm]
+        PredEnt 
+            & Llama3.2V 11B
+            & 0.014 
+            & 0.0 
+            & 0.1 
+            & 0.18 \\[1mm]
+        PredEnt 
+            & Qwen VL 
+            & 0.217 
+            & 0.0 
+            & 0.1 
+            & 0.5 \\
+        \bottomrule
+    \end{tabular}
+    \caption{ECE, Variance, and additional metrics for different baseline and grounding models.}
+    \label{tab:ece_metrics}
+\end{table}

@@ -681,10 +681,10 @@ def main():
       4) Merge
       5) Plots
     """
-    explanation_dir = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/explanations" # for slake
+    explanation_dir = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/gemini_slake/explanations" # for slake
     # explanation_dir = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/explanations_2000" # for vqa
     # out_dir         = "my_outputs/vqa" # for vqa
-    out_dir = "my_outputs_slake" # for slake 
+    out_dir = "my_outputs_slake_gemini_filtered_june1" # for slake 
     make_dir_if_not_exists(out_dir)
 
     # Step 1: Baseline
@@ -696,7 +696,7 @@ def main():
     )
 
     # Step 2: Accuracy
-    accuracy_csv = os.path.join(out_dir, "accuracy_march10.csv")
+    accuracy_csv = os.path.join(out_dir, "accuracy.csv")
     get_accuracy(
         explanation_dir,
         accuracy_csv,
@@ -715,26 +715,28 @@ def main():
     # grounding_gemini = "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_gemini"
     grounding_info = {
     'biomedclip': {
-        'folder': '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding',
+        'folder': '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/gemini_slake/grounding',
         'score_key': 'biomedclip_score',
         'score_type': 'continuous'
     },
     'llama32_11b': {
-        'folder': '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_llama32',
+        # 'folder': '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_llama32',
+        'folder': '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/gemini_slake/grounding_with_llama32_11B',
         'score_key': 'llama_32_response'
     },
-    # 'qwen_vl': {
-    #     'folder': "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/grounding_with_qwen_vl",
-    #     'score_key': 'qwen_vl_response'
-    # },
+    # # 'qwen_vl': {
+    # #     'folder': "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/llava_vqa_yes_gsam_grounding_random_1000_temp_05/grounding_with_qwen_vl",
+    # #     'score_key': 'qwen_vl_response'
+    # # },
     'qwen_vl': {
-        'folder': "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_qwen_vl",
+        # 'folder': "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_qwen_vl",
+        'folder': '/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/gemini_slake/grounding_with_qwen_vl',
         'score_key': 'qwen_vl_response'
     },
-    'gemini': {
-        'folder': "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_gemini",
-        'score_key': 'gemini_grounding_response'
-    }
+    # 'gemini': {
+    #     'folder': "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_slake/llava_med_slake/grounding_with_gemini",
+    #     'score_key': 'gemini_grounding_response'
+    # }
     }
     grounding_csv = os.path.join(out_dir, "grounding.csv")
     get_grounding(grounding_csv, grounding_info)

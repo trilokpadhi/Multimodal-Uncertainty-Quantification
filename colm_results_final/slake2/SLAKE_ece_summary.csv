@@ -1,0 +1,9 @@
+baseline,grounding_model,mean_ece,variance_ece,mean_T,mean_C
+lexical_similarity_min_max_scaled,baseline,0.06832790788340382,0.0,,
+lexical_similarity_min_max_scaled,grounding_llama32_11b_mean_min_max_scaled,0.0033816411476694447,0.0,0.1,0.25
+num_clusters_min_max_scaled,baseline,0.3511282051282052,0.0,,
+num_clusters_min_max_scaled,grounding_llama32_11b_mean_min_max_scaled,0.005950013707904812,0.0,0.1,0.25
+confidence_from_semantic_entropy_min_max_scaled,baseline,0.3374586457762771,0.0,,
+confidence_from_semantic_entropy_min_max_scaled,grounding_llama32_11b_mean_min_max_scaled,0.002092118578219208,0.0,0.1,0.25
+confidence_from_predictive_entropy_min_max_scaled,baseline,0.36516890557681436,0.0,,
+confidence_from_predictive_entropy_min_max_scaled,grounding_llama32_11b_mean_min_max_scaled,0.006200492850475815,0.0,0.1,0.25
