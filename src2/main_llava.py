@@ -44,8 +44,8 @@ def llava_inference_pipeline(config, rank, world_size):
         processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
         
     elif model_type == 'qwen':
-        from transformers import QwenForConditionalGeneration, AutoProcessor
-        model = QwenForConditionalGeneration.from_pretrained(model_id, torch_dtype=torch.bfloat16).to(device)
+        from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
+        model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_id, torch_dtype=torch.bfloat16, attn_implementation="flash_attention_2").to(device)
         processor = AutoProcessor.from_pretrained(model_id)
 
     # 3. Generate LLaVA responses for each sample

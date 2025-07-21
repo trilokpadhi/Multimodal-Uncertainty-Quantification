@@ -107,10 +107,17 @@ def generate_explanations_MM(model, processor, sample, rank, config): # pass con
         inputs = processor(text=prompts, images=[raw_image]*total, return_tensors='pt', padding=True).to(torch_device)
 
     elif config['mm_model']['model_type'] == 'qwen':
-        messages = [{"role": "user", "content": [{"type": "image", "image": raw_image}, {"type": "text", "text": question}]}]
-        text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        image_inputs, _ = process_vision_info(messages)
-        inputs = processor(text=[text]*total, images=image_inputs*total, padding=True, return_tensors="pt").to(torch_device)
+        messages_batch = [[{"role": "user", "content": [{"type": "image", "image": raw_image}, {"type": "text", "text": question}]}]] * total
+        
+        # 2. Generate a list of text prompts, one for each conversation
+        prompts = [processor.apply_chat_template(msg, tokenize=False, add_generation_prompt=True) for msg in messages_batch]
+        
+        # 3. Explicitly process vision inputs from the message batch
+        image_inputs, _ = process_vision_info(messages_batch)
+
+        # 4. Pass the processed texts and images to the main processor
+        inputs = processor(text=prompts, images=image_inputs, padding=True, return_tensors="pt").to(torch_device)
+
 
     elif config['mm_model']['model_type'] == 'llava':
         prompts = [f"USER: <image>\n{question}\nASSISTANT:"] * total
