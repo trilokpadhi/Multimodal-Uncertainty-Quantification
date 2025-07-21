@@ -1,0 +1,26 @@
+\begin{tabular}{llrrrr}
+    \toprule
+                                             baseline &                           grounding\_model &  mean\_ece &  variance\_ece &    mean\_T &   mean\_C \\
+    \midrule
+                    lexical\_similarity &                                  baseline &  0.053371 &      0.000074 &       NaN &      NaN \\
+                    lexical\_similarity &  biomedclip &  0.006967 &      0.000005 &  1.181082 & 0.226000 \\
+                    lexical\_similarity & llama32\_11b &  0.008556 &      0.000008 &  0.100000 & 0.264000 \\
+                    lexical\_similarity &     qwen\_vl &  0.028660 &      0.000088 &  2.262164 & 0.044000 \\
+                    lexical\_similarity &      gemini &  0.008300 &      0.000004 &  0.100000 & 0.264000 \\
+                    num\_clusters &                                  baseline &  0.356954 &      0.000340 &       NaN &      NaN \\
+                    num\_clusters &  biomedclip &  0.010024 &      0.000007 &  0.100000 & 0.266000 \\
+                    num\_clusters & llama32\_11b &  0.008739 &      0.000003 &  0.100000 & 0.264000 \\
+                    num\_clusters &     qwen\_vl &  0.135126 &      0.000254 & 43.343287 & 0.474000 \\
+                    num\_clusters &      gemini &  0.009551 &      0.000020 &  0.100000 & 0.264000 \\
+    semantic\_entropy &                                  baseline &  0.311815 &      0.000219 &       NaN &      NaN \\
+    semantic\_entropy &  biomedclip &  0.011229 &      0.000006 &  0.100000 & 0.266000 \\
+    semantic\_entropy & llama32\_11b &  0.006576 &      0.000007 &  0.100000 & 0.264000 \\
+    semantic\_entropy &     qwen\_vl &  0.236905 &      0.000466 &  0.100000 & 0.496000 \\
+    semantic\_entropy &      gemini &  0.012091 &      0.000001 &  0.140040 & 0.256000 \\
+    predictive\_entropy &                                  baseline &  0.368223 &      0.000075 &       NaN &      NaN \\
+    predictive\_entropy &  biomedclip &  0.011845 &      0.000004 &  0.100000 & 0.264000 \\
+    predictive\_entropy & llama32\_11b &  0.007975 &      0.000006 &  0.100000 & 0.266000 \\
+    predictive\_entropy &     qwen\_vl &  0.175691 &      0.000309 & 12.712625 & 0.500000 \\
+    predictive\_entropy &      gemini &  0.004937 &      0.000014 &  0.140040 & 0.264000 \\
+    \bottomrule
+    \end{tabular}

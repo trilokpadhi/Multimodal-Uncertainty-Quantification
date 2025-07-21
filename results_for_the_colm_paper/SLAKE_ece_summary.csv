@@ -1,0 +1,4 @@
+baseline,grounding_model,mean_ece,variance_ece,mean_T,mean_C
+lexical_similarity_min_max_scaled,baseline,0.07183213740498792,2.2595234668172477e-05,,
+lexical_similarity_min_max_scaled,temperature_scaled,0.07941657259498229,0.0,1.020921843687375,
+lexical_similarity_min_max_scaled,grounding_biomedclip_mean_min_max_scaled,0.00643934306547389,3.45e-05,0.26016032064128264,0.49000000000000005
