@@ -12,6 +12,7 @@ from transformers import LlavaForConditionalGeneration, AutoProcessor
 from transformers import AutoModelForCausalLM
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
 
+
 def llava_inference_pipeline(config, rank, world_size):
     torch.cuda.set_device(rank)
     device = f"cuda:{rank}"
@@ -23,7 +24,7 @@ def llava_inference_pipeline(config, rank, world_size):
     if config['data']['dataset'] == 'vqa':
         dataloader = get_vqa_dataloader(config['data'], rank=rank, world_size=world_size)
     elif config['data']['dataset'] == 'gqa':
-        dataloader = get_gqa_dataloader(config['data'], rank=rank, world_size=world_size)
+        dataloader = get_gqa_dataloader(config, rank=rank, world_size=world_size)
     else:
         raise ValueError("Invalid dataset specified in the config file.")
     
@@ -33,12 +34,14 @@ def llava_inference_pipeline(config, rank, world_size):
     model_type = config['mm_model']['model_type']
 
     if model_type == 'llava':
+        from transformers import LlavaForConditionalGeneration, AutoProcessor
         model = LlavaForConditionalGeneration.from_pretrained(model_id, torch_dtype=torch.bfloat16).to(device)
         processor = AutoProcessor.from_pretrained(model_id)
     
     elif model_type == 'phi':
-        model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.bfloat16).to(device)
-        processor = AutoProcessor.from_pretrained(model_id)
+        from transformers import AutoModelForCausalLM, AutoProcessor
+        model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.bfloat16, trust_remote_code=True, _attn_implementation='flash_attention_2').to(device)
+        processor = AutoProcessor.from_pretrained(model_id, trust_remote_code=True)
         
     elif model_type == 'qwen':
         from transformers import QwenForConditionalGeneration, AutoProcessor
@@ -47,7 +50,7 @@ def llava_inference_pipeline(config, rank, world_size):
 
     # 3. Generate LLaVA responses for each sample
     num_samples = len(dataloader)
-    for sample in tqdm(dataloader, total=num_samples, desc=f"Rank {rank} - LLaVA"):
+    for sample in tqdm(dataloader, total=num_samples, desc=f"Rank {rank} - {model_type} Inference"):
         generate_explanations_MM(
             model,
             processor,
@@ -57,7 +60,7 @@ def llava_inference_pipeline(config, rank, world_size):
             # params=config['mm_model'],
             # config_logging=config['logging']
         )
-    print(f"Rank {rank}: LLaVA inference completed.")
+    print(f"Rank {rank}: {model_type} inference completed.")
 
 def main():
     parser = argparse.ArgumentParser()

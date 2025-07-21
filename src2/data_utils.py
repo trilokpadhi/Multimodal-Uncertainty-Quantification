@@ -26,7 +26,7 @@ def gqa_collate_fn(batch):
         'image_ids': [item['imageId'] for item in batch]
     }
 
-def get_gqa_dataloader(config, batch_size, rank, world_size):
+def get_gqa_dataloader(config, rank, world_size):
     """
     Creates a DataLoader that yields batches of raw, unprocessed data.
     """
@@ -41,7 +41,7 @@ def get_gqa_dataloader(config, batch_size, rank, world_size):
 
     dataloader = DataLoader(
         dataset,
-        batch_size=batch_size,
+        batch_size=config['mm_model']['batch_size'],
         sampler=sampler,
         collate_fn=gqa_collate_fn,
     )

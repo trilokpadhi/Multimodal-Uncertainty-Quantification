@@ -15,7 +15,7 @@ import cv2
 from typing import Union, List, Optional, Tuple
 import numpy as np
 from dataclasses import dataclass
-from transformers import AutoProcessor, LlavaForConditionalGeneration, AutoModelForMaskGeneration, pipeline
+from transformers import AutoProcessor, LlavaForConditionalGeneration, AutoModelForMaskGeneration, pipeline, GenerationConfig
 from tqdm import tqdm
 import json
 import psutil
@@ -90,50 +90,66 @@ def generate_explanations_MM(model, processor, sample, rank, config): # pass con
     question_id = sample['question_ids'][0]
     raw_image = sample['images'][0]  # Assuming images are already loaded in the sample
     question = sample['questions'][0]
-
+    total = config['mm_model']['no_of_responses_sampled_per_image']
     if os.path.exists(os.path.join(config['logging']['explanation_dir'], f"explanations_{question_id}.pkl")):
         print(f"Explanations for question {question_id} already exist... Skipping...")
         return f"explanations_{question_id}.pkl"
 
     print(f"Generating explanations for question {question_id} using model type: {config['mm_model']['model_type']}")
 
-    if config['mm_model']['model_type'] == 'phi4':
+    total = config['mm_model']['no_of_responses_sampled_per_image']
+    if config['mm_model']['model_type'] == 'phi':
+        generation_config = GenerationConfig.from_pretrained(config['mm_model']['model_id'])
         user_prompt = '<|user|>'
         assistant_prompt = '<|assistant|>'
         prompt_suffix = '<|end|>'
         prompts = [f"{user_prompt}<|image_1|>{question}{prompt_suffix}{assistant_prompt}"] * total
-        inputs = processor(text=prompts, images=images*total, return_tensors='pt', padding=True).to(torch_device)
+        inputs = processor(text=prompts, images=[raw_image]*total, return_tensors='pt', padding=True).to(torch_device)
 
     elif config['mm_model']['model_type'] == 'qwen':
-        messages = [{"role": "user", "content": [{"type": "image", "image": images[0]}, {"type": "text", "text": question}]}]
+        messages = [{"role": "user", "content": [{"type": "image", "image": raw_image}, {"type": "text", "text": question}]}]
         text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         image_inputs, _ = process_vision_info(messages)
         inputs = processor(text=[text]*total, images=image_inputs*total, padding=True, return_tensors="pt").to(torch_device)
 
     elif config['mm_model']['model_type'] == 'llava':
         prompts = [f"USER: <image>\n{question}\nASSISTANT:"] * total
-        inputs = processor(text=prompts, images=images*total, return_tensors="pt", padding=True).to(torch_device)
+        inputs = processor(text=prompts, images=[raw_image]*total, return_tensors="pt", padding=True).to(torch_device)
+
+    else:
+        raise ValueError(f"Unsupported model_type: {config['mm_model']['model_type']}")
+
+    if config['mm_model']['model_type'] in['llava', 'qwen']:
+        outputs = model.generate(
+            **inputs,
+            do_sample=True,
+            temperature=config['mm_model']['temperature'],
+            top_p=config['mm_model']['top_p'],
+            num_beams=config['mm_model']['num_beams'],
+            max_new_tokens=config['mm_model']['max_new_tokens'],
+            use_cache=False,
+            return_dict_in_generate=True,
+            output_scores=True,
+        )
+
+    elif config['mm_model']['model_type'] == 'phi': # is there any issue here? Answer: Yes, the syntax is incorrect.
+
+        outputs = model.generate(
+            **inputs,
+            do_sample=True,
+            temperature=config['mm_model']['temperature'],
+            top_p=config['mm_model']['top_p'],
+            num_beams=config['mm_model']['num_beams'],
+            max_new_tokens=config['mm_model']['max_new_tokens'],
+            use_cache=False,
+            return_dict_in_generate=True,
+            output_scores=True,
+            generation_config=generation_config,
+            num_logits_to_keep=0, # Disable logits for efficiency
+        )
         
     else:
-        raise ValueError(f"Unsupported config['mm_model']['model_type']: {config['mm_model']['model_type']}")
-
-    total = config['mm_model']['no_of_responses_sampled_per_image']
-    images = [raw_image] * total
-
-    inputs = processor(images=images, text=prompts, return_tensors="pt").to(torch_device)
-
-    outputs = model.generate(
-        input_ids=inputs['input_ids'],
-        pixel_values=inputs['pixel_values'],
-        do_sample=True,
-        temperature=config['mm_model']['temperature'],
-        top_p=config['mm_model']['top_p'],
-        num_beams=config['mm_model']['num_beams'],
-        max_new_tokens=config['mm_model']['max_new_tokens'],
-        use_cache=False,
-        return_dict_in_generate=True,
-        output_scores=True,
-    )
+        raise ValueError(f"Unsupported model_type: {config['mm_model']['model_type']}")
 
     for i in range(total):
         generated_token_ids = outputs.sequences[i, inputs['input_ids'].shape[-1]:]
