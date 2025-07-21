@@ -3,7 +3,7 @@
 LLaVA/
 aws/
 awscli-bundle/
-datasets_/
+dataset/
 hfdownloader
 llama32_11b/
 runs_slake/

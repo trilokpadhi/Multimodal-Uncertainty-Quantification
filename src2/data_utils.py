@@ -8,24 +8,49 @@ from torch.utils.data.distributed import DistributedSampler
 from datasets import load_dataset, load_from_disk
 
 # dataloader for GQA
-def get_gqa_dataloader(config, rank, world_size):
-    """
-    Load data based on dataset type (json/pandas)
-    """
-    dataset_type = config['dataset_type']
-    print(f"Dataset type: {dataset_type}")
-    if dataset_type.lower() == 'dataframe':
-        raise NotImplementedError("Dataloader for dataframe not implemented yet.")
-    elif dataset_type.lower() == 'json': 
-        dataset = GQADataset(config)
-        # Create a distributed sampler to split the dataset across GPUs
-        sampler = DistributedSampler(dataset, num_replicas=world_size, rank=rank, shuffle=False)
+# Below is deprecated code for GQA dataloader, use get_gqa_dataloader instead
 
-        return DataLoader(dataset, batch_size=1, collate_fn=gqa_collate_fn, sampler=sampler)
+from datasets import load_from_disk
+import torch
+from torch.utils.data import DataLoader, DistributedSampler
 
-    else:
-        raise ValueError(f"Invalid dataset type: {dataset_type}")
+def gqa_collate_fn(batch):
+    """
+    A simple collate function that batches raw data without any processing.
+    """
+    return {
+        'question_ids': [item['id'] for item in batch],
+        'images': [item['image'] for item in batch],
+        'questions': [item['question'] for item in batch],
+        'answers': [item['fullAnswer'] for item in batch],
+        'image_ids': [item['imageId'] for item in batch]
+    }
+
+def get_gqa_dataloader(config, batch_size, rank, world_size):
+    """
+    Creates a DataLoader that yields batches of raw, unprocessed data.
+    """
+    # dataset = load_dataset(config['root_dir'])
+    dataset = load_from_disk(config['data']['root_dir'])
+    sampler = DistributedSampler(
+        dataset,
+        num_replicas=world_size,
+        rank=rank,
+        shuffle=False
+    )
+
+    dataloader = DataLoader(
+        dataset,
+        batch_size=batch_size,
+        sampler=sampler,
+        collate_fn=gqa_collate_fn,
+    )
     
+    return dataloader
+
+"""
+This is depracted code for GQA dataset, we directly use the Hugging Face dataset 
+"""
 class GQADataset:
     def __init__(self, config):
         self.root = config['root_dir']
@@ -80,7 +105,8 @@ class GQADataset:
     
         
 # write a collate function to collate the samples
-def gqa_collate_fn(batch):
+# This is deprecated code for GQA collate function, use gqa_collate_fn instead
+def gqa_collate_fn_old(batch):
     question_ids = []
     questions = []
     promptified_questions = []

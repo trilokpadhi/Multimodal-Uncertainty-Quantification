@@ -9,6 +9,8 @@ from tqdm import tqdm
 from data_utils import get_vqa_dataloader, get_gqa_dataloader
 from inference_utils import generate_explanations_MM
 from transformers import LlavaForConditionalGeneration, AutoProcessor
+from transformers import AutoModelForCausalLM
+from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
 
 def llava_inference_pipeline(config, rank, world_size):
     torch.cuda.set_device(rank)
@@ -27,20 +29,33 @@ def llava_inference_pipeline(config, rank, world_size):
     
 
     # 2. Load LLaVA
-    model_id_llava = config['mm_model']['model_path']
-    model_llava = LlavaForConditionalGeneration.from_pretrained(model_id_llava, torch_dtype=torch.bfloat16).to(device)
-    processor_llava = AutoProcessor.from_pretrained(model_id_llava)
+    model_id = config['mm_model']['model_id']
+    model_type = config['mm_model']['model_type']
+
+    if model_type == 'llava':
+        model = LlavaForConditionalGeneration.from_pretrained(model_id, torch_dtype=torch.bfloat16).to(device)
+        processor = AutoProcessor.from_pretrained(model_id)
+    
+    elif model_type == 'phi':
+        model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.bfloat16).to(device)
+        processor = AutoProcessor.from_pretrained(model_id)
+        
+    elif model_type == 'qwen':
+        from transformers import QwenForConditionalGeneration, AutoProcessor
+        model = QwenForConditionalGeneration.from_pretrained(model_id, torch_dtype=torch.bfloat16).to(device)
+        processor = AutoProcessor.from_pretrained(model_id)
 
     # 3. Generate LLaVA responses for each sample
     num_samples = len(dataloader)
     for sample in tqdm(dataloader, total=num_samples, desc=f"Rank {rank} - LLaVA"):
         generate_explanations_MM(
-            model_llava,
-            processor_llava,
+            model,
+            processor,
             sample,
             rank=rank,
-            params=config['mm_model'],
-            config_logging=config['logging']
+            config=config
+            # params=config['mm_model'],
+            # config_logging=config['logging']
         )
     print(f"Rank {rank}: LLaVA inference completed.")
 

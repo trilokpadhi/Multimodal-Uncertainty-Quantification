@@ -1,9 +1,0 @@
-BaselineConfidence,CalibrationMethod,GroundingContext,MeanEvalECE,VarEvalECE,MeanT,MeanC,MeanCalibECE
-lexical_similarity_min_max_scaled,None (Baseline),N/A,0.07183213740498792,2.2595234668172477e-05,,,
-lexical_similarity_min_max_scaled,Temperature Scaling (Baseline Conf),N/A,0.07716249353176491,1.97e-05,1.020921843687375,,0.07831984232283051
-lexical_similarity_min_max_scaled,Exponent + C,grounding_biomedclip_mean_min_max_scaled,0.01598001430888406,0.0005968,0.26016032064128264,0.49000000000000005,0.00643934306547389
-lexical_similarity_min_max_scaled,Temperature Scaling (Grounding Only),grounding_biomedclip_mean_min_max_scaled,0.05657206806175068,0.0003396,1.9418436873747495,,0.0334950890419212
-lexical_similarity_min_max_scaled,Exponent + C,grounding_llama32_11b_processed_score_min_max_scaled,0.05089133714965564,2.82e-05,1.221122244488978,0.248,0.037246084244044575
-lexical_similarity_min_max_scaled,Temperature Scaling (Grounding Only),grounding_llama32_11b_processed_score_min_max_scaled,0.16115372779409437,4.29e-05,0.4203206412825652,,0.15990688175679577
-lexical_similarity_min_max_scaled,Exponent + C,grounding_qwen_vl_processed_score_min_max_scaled,0.07447663605216151,2.91e-05,1.1410420841683369,0.006,0.06964327400137563
-lexical_similarity_min_max_scaled,Temperature Scaling (Grounding Only),grounding_qwen_vl_processed_score_min_max_scaled,0.02284088364413677,3e-07,0.1,,0.026498505892412278

@@ -82,20 +82,42 @@ def save_results(results, directory, filename):
     print(f'Results saved to {file_path}')
     
 ########### Below implementation is for generating explanations using Llava model without LLama 2 completions ###########
-def generate_explanations_MM(model, processor, sample, rank, params, config_logging):
+# def generate_explanations_MM(model, processor, sample, rank, params, config_logging):
+def generate_explanations_MM(model, processor, sample, rank, config): # pass config instead of params and config_logging
     torch_device = f'cuda:{rank}' if torch.cuda.is_available() else 'cpu'
     # model = model.half().to(torch_device)
-    raw_image = Image.open(sample['image_paths'][0])
+    # raw_image = Image.open(sample['image_paths'][0])
     question_id = sample['question_ids'][0]
+    raw_image = sample['images'][0]  # Assuming images are already loaded in the sample
+    question = sample['questions'][0]
 
-    if os.path.exists(os.path.join(config_logging['explanation_dir'], f"explanations_{question_id}.pkl")):
+    if os.path.exists(os.path.join(config['logging']['explanation_dir'], f"explanations_{question_id}.pkl")):
         print(f"Explanations for question {question_id} already exist... Skipping...")
         return f"explanations_{question_id}.pkl"
 
-    print(f"Generating explanations for question {question_id}")
+    print(f"Generating explanations for question {question_id} using model type: {config['mm_model']['model_type']}")
 
-    total = params['no_of_responses_sampled_per_image']
-    prompts = [sample['promptified_questions'][0]] * total
+    if config['mm_model']['model_type'] == 'phi4':
+        user_prompt = '<|user|>'
+        assistant_prompt = '<|assistant|>'
+        prompt_suffix = '<|end|>'
+        prompts = [f"{user_prompt}<|image_1|>{question}{prompt_suffix}{assistant_prompt}"] * total
+        inputs = processor(text=prompts, images=images*total, return_tensors='pt', padding=True).to(torch_device)
+
+    elif config['mm_model']['model_type'] == 'qwen':
+        messages = [{"role": "user", "content": [{"type": "image", "image": images[0]}, {"type": "text", "text": question}]}]
+        text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        image_inputs, _ = process_vision_info(messages)
+        inputs = processor(text=[text]*total, images=image_inputs*total, padding=True, return_tensors="pt").to(torch_device)
+
+    elif config['mm_model']['model_type'] == 'llava':
+        prompts = [f"USER: <image>\n{question}\nASSISTANT:"] * total
+        inputs = processor(text=prompts, images=images*total, return_tensors="pt", padding=True).to(torch_device)
+        
+    else:
+        raise ValueError(f"Unsupported config['mm_model']['model_type']: {config['mm_model']['model_type']}")
+
+    total = config['mm_model']['no_of_responses_sampled_per_image']
     images = [raw_image] * total
 
     inputs = processor(images=images, text=prompts, return_tensors="pt").to(torch_device)
@@ -104,10 +126,10 @@ def generate_explanations_MM(model, processor, sample, rank, params, config_logg
         input_ids=inputs['input_ids'],
         pixel_values=inputs['pixel_values'],
         do_sample=True,
-        temperature=params['temperature'],
-        top_p=params['top_p'],
-        num_beams=params['num_beams'],
-        max_new_tokens=params['max_new_tokens'],
+        temperature=config['mm_model']['temperature'],
+        top_p=config['mm_model']['top_p'],
+        num_beams=config['mm_model']['num_beams'],
+        max_new_tokens=config['mm_model']['max_new_tokens'],
         use_cache=False,
         return_dict_in_generate=True,
         output_scores=True,
@@ -128,7 +150,7 @@ def generate_explanations_MM(model, processor, sample, rank, params, config_logg
     del inputs, outputs, generated_token_ids, decoded_outputs, transition_scores
     torch.cuda.empty_cache()
 
-    save_results(sample, config_logging['explanation_dir'], f"explanations_{question_id}.pkl")
+    save_results(sample, config['logging']['explanation_dir'], f"explanations_{question_id}.pkl")
     print(f'Explanations generated and saved to file f"explanations_{question_id}.pkl"')
     return f"explanations_{question_id}.pkl"
 
