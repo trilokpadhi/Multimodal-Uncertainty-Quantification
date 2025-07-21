@@ -31,10 +31,10 @@ uncertainty:
   get_uncertainty: true
 
 logging:
-  explanation_dir: "/runs_gqa/qwen_gqa_random_1000_temp_05/explanations_2000"
-  grounding_dir_with_gdsam: "/runs_gqa/qwen_gqa_random_1000_temp_05/grounding_with_gdsam"
-  grounding_dir_with_qwen_vl: "/runs_gqa/qwen_gqa_random_1000_temp_05/grounding_with_qwen_vl"
-  grounding_dir_with_qwen_vl_25_7B: "/runs_gqa/qwen_gqa_random_1000_temp_05/grounding_with_qwen_vl_25_7B"
-  grounding_dir_with_llama32_90B: "/runs_gqa/qwen_gqa_random_1000_temp_05/grounding_with_llama32_90B"
-  grounding_dir_with_llama32_11B: "/runs_gqa/qwen_gqa_random_1000_temp_05/grounding_with_llama32_11B"
-  grounding_dir_with_gemini: "/runs_gqa/qwen_gqa_random_1000_temp_05/grounding_with_gemini"
+  explanation_dir: "runs_gqa/qwen_gqa_random_1000_temp_05/explanations_2000"
+  grounding_dir_with_gdsam: "runs_gqa/qwen_gqa_random_1000_temp_05/grounding_with_gdsam"
+  grounding_dir_with_qwen_vl: "runs_gqa/qwen_gqa_random_1000_temp_05/grounding_with_qwen_vl"
+  grounding_dir_with_qwen_vl_25_7B: "runs_gqa/qwen_gqa_random_1000_temp_05/grounding_with_qwen_vl_25_7B"
+  grounding_dir_with_llama32_90B: "runs_gqa/qwen_gqa_random_1000_temp_05/grounding_with_llama32_90B"
+  grounding_dir_with_llama32_11B: "runs_gqa/qwen_gqa_random_1000_temp_05/grounding_with_llama32_11B"
+  grounding_dir_with_gemini: "runs_gqa/qwen_gqa_random_1000_temp_05/grounding_with_gemini"
