@@ -3,9 +3,10 @@ samples: 20
 triple_extraction: false
 data:
   dataset: "gqa"
-  root_dir: "/home/ubuntu/trilok/mmuq/Multimodal-Uncertainty-Quantification/dataset/GQA/mmuq_dataset_filtered_testdev_1k"
+  root_dir: "dataset/GQA/mmuq_dataset_filtered_testdev_1k"
   samples: 1000
 mm_model:
+  batch_size: 1
   model_type: "phi"
   model_id: "microsoft/Phi-4-multimodal-instruct"
   temperature: 0.5
@@ -30,10 +31,10 @@ uncertainty:
   get_uncertainty: true
 
 logging:
-  explanation_dir: "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/phi4_gqa_random_1000_temp_05/explanations_2000"
-  grounding_dir_with_gdsam: "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/phi4_gqa_random_1000_temp_05/grounding_with_gdsam"
-  grounding_dir_with_qwen_vl: "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/phi4_gqa_random_1000_temp_05/grounding_with_qwen_vl"
-  grounding_dir_with_qwen_vl_25_7B: "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/phi4_gqa_random_1000_temp_05/grounding_with_qwen_vl_25_7B"
-  grounding_dir_with_llama32_90B: "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/phi4_gqa_random_1000_temp_05/grounding_with_llama32_90B"
-  grounding_dir_with_llama32_11B: "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/phi4_gqa_random_1000_temp_05/grounding_with_llama32_11B"
-  grounding_dir_with_gemini: "/staging/users/tpadhi1/Multimodal-Uncertainty-Quantification/runs_vqa6/phi4_gqa_random_1000_temp_05/grounding_with_gemini"
+  explanation_dir: "runs_gqa/phi4_gqa_random_1000_temp_05/explanations_2000"
+  grounding_dir_with_gdsam: "runs_gqa/phi4_gqa_random_1000_temp_05/grounding_with_gdsam"
+  grounding_dir_with_qwen_vl: "runs_gqa/phi4_gqa_random_1000_temp_05/grounding_with_qwen_vl"
+  grounding_dir_with_qwen_vl_25_7B: "runs_gqa/phi4_gqa_random_1000_temp_05/grounding_with_qwen_vl_25_7B"
+  grounding_dir_with_llama32_90B: "runs_gqa/phi4_gqa_random_1000_temp_05/grounding_with_llama32_90B"
+  grounding_dir_with_llama32_11B: "runs_gqa/phi4_gqa_random_1000_temp_05/grounding_with_llama32_11B"
+  grounding_dir_with_gemini: "runs_gqa/phi4_gqa_random_1000_temp_05/grounding_with_gemini"
